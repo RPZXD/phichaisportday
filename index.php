@@ -127,7 +127,7 @@ try {
             header('Location: index.php?route=dashboard');
             exit();
     }
-} catch (Exception $e) {
+} catch (Throwable $e) {
     header('HTTP/1.1 500 Internal Server Error');
     echo "<div style='font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 8px; margin: 2rem; border: 1px solid #334155;'>";
     echo "<h1 style='color: #ef4444;'>500 Internal Server Error</h1>";
