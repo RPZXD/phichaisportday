@@ -347,8 +347,8 @@
                                                     <select name="sports_day_athlete_id[]" class="athlete-select w-full" required>
                                                         <option value=""></option>
                                                         <?php foreach ($colorAthletes as $colAthlete): ?>
-                                                            <option value="<?= $colAthlete['id'] ?>">
-                                                                <?= htmlspecialchars($colAthlete['student_name']) ?> — รหัส <?= htmlspecialchars($colAthlete['student_id']) ?> [ม.<?= htmlspecialchars($colAthlete['grade_level']) ?>/<?= htmlspecialchars($colAthlete['room_number']) ?>]
+                                                            <option value="<?= $colAthlete['id'] ?>" data-reg-count="<?= $colAthlete['reg_count'] ?>">
+                                                                <?= htmlspecialchars($colAthlete['student_name']) ?> (ลงแล้ว: <?= $colAthlete['reg_count'] ?>/2) — รหัส <?= htmlspecialchars($colAthlete['student_id']) ?> [ม.<?= htmlspecialchars($colAthlete['grade_level']) ?>/<?= htmlspecialchars($colAthlete['room_number']) ?>]
                                                             </option>
                                                         <?php endforeach; ?>
                                                     </select>
@@ -369,8 +369,8 @@
                                             <select name="sports_day_athlete_id[]" class="athlete-select w-full" required>
                                                 <option value=""></option>
                                                 <?php foreach ($colorAthletes as $colAthlete): ?>
-                                                    <option value="<?= $colAthlete['id'] ?>">
-                                                        <?= htmlspecialchars($colAthlete['student_name']) ?> — รหัส <?= htmlspecialchars($colAthlete['student_id']) ?> [ม.<?= htmlspecialchars($colAthlete['grade_level']) ?>/<?= htmlspecialchars($colAthlete['room_number']) ?>]
+                                                    <option value="<?= $colAthlete['id'] ?>" data-reg-count="<?= $colAthlete['reg_count'] ?>">
+                                                        <?= htmlspecialchars($colAthlete['student_name']) ?> (ลงแล้ว: <?= $colAthlete['reg_count'] ?>/2) — รหัส <?= htmlspecialchars($colAthlete['student_id']) ?> [ม.<?= htmlspecialchars($colAthlete['grade_level']) ?>/<?= htmlspecialchars($colAthlete['room_number']) ?>]
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
@@ -729,6 +729,8 @@ $(document).ready(function () {
     $('#register-event-form').on('submit', function (e) {
         var selectedIds = [];
         var hasDuplicate = false;
+        var hasExceededLimit = false;
+
         $('#athlete-rows .athlete-select').each(function () {
             var val = $(this).val();
             if (val) {
@@ -736,6 +738,13 @@ $(document).ready(function () {
                     hasDuplicate = true;
                 }
                 selectedIds.push(val);
+
+                // Get selected option's reg count attribute
+                var selectedOption = $(this).find('option:selected');
+                var regCount = parseInt(selectedOption.attr('data-reg-count') || '0', 10);
+                if (regCount >= 2) {
+                    hasExceededLimit = true;
+                }
             }
         });
 
@@ -756,6 +765,27 @@ $(document).ready(function () {
                     confirmButton: 'swal-sportday-btn',
                 }
             });
+            return;
+        }
+
+        if (hasExceededLimit) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'ลงสมัครเกินโควต้าที่กำหนด',
+                text: 'มีนักกีฬาบางคนลงสมัครแข่งขันเต็มขีดจำกัดแล้ว (สูงสุดไม่เกินคนละ 2 ประเภทกีฬา)',
+                background: '#0d1022',
+                color: '#f1f5f9',
+                iconColor: '#ef4444',
+                confirmButtonColor: '#6366f1',
+                customClass: {
+                    popup: 'swal-sportday-popup',
+                    title: 'swal-sportday-title',
+                    htmlContainer: 'swal-sportday-text',
+                    confirmButton: 'swal-sportday-btn',
+                }
+            });
+            return;
         }
     });
 

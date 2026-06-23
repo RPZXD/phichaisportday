@@ -96,6 +96,13 @@ class StudentController {
 
             // Get all active students belonging to the same house color
             $colorAthletes = $this->athleteModel->getStudentsByHouse($athlete['house_id']);
+
+            // Enrich with current registration counts
+            foreach ($colorAthletes as &$colAthlete) {
+                $regs = $this->matchModel->getStudentRegistrations($colAthlete['student_id']);
+                $colAthlete['reg_count'] = count($regs);
+            }
+            unset($colAthlete);
         }
 
         // Leaderboard standings
@@ -190,6 +197,16 @@ class StudentController {
         $successCount = 0;
         $failHouse    = 0;
         $failDup      = 0;
+        $failLimit    = 0;
+
+        // Running cache of target athlete registration counts to prevent duplicate count checks
+        $athleteRegCounts = [];
+        foreach ($target_athlete_ids as $target_athlete_id) {
+            if (!isset($athleteRegCounts[$target_athlete_id])) {
+                $existingRegs = $this->matchModel->getStudentRegistrations($target_athlete_id);
+                $athleteRegCounts[$target_athlete_id] = count($existingRegs);
+            }
+        }
 
         foreach ($target_athlete_ids as $target_athlete_id) {
             // Security: must belong to same house
@@ -198,8 +215,23 @@ class StudentController {
                 $failHouse++;
                 continue;
             }
+
+            // Check duplicate first
+            $isAlreadyRegistered = $this->matchModel->isAthleteRegisteredForSport($target_athlete_id, $sport_id);
+            if ($isAlreadyRegistered) {
+                $failDup++;
+                continue;
+            }
+
+            // Check 2-sport registration limit
+            if ($athleteRegCounts[$target_athlete_id] >= 2) {
+                $failLimit++;
+                continue;
+            }
+
             if ($this->matchModel->registerAthleteToSport($target_athlete_id, $sport_id)) {
                 $successCount++;
+                $athleteRegCounts[$target_athlete_id]++;
             } else {
                 $failDup++;
             }
@@ -215,13 +247,18 @@ class StudentController {
         } elseif ($successCount > 0) {
             UtilController::flashWarning('ลงทะเบียนบางส่วนสำเร็จ',
                 "สำเร็จ {$successCount} คน" .
+                ($failLimit > 0 ? " • เกินโควต้าแข่ง (สูงสุด 2 ประเภท) {$failLimit} คน" : '') .
                 ($failDup   > 0 ? " • ซ้ำซ้อน {$failDup} คน" : '') .
                 ($failHouse > 0 ? " • คณะสีไม่ตรง {$failHouse} คน" : ''));
         } else {
-            UtilController::flashError('ไม่สามารถลงทะเบียนได้',
-                $failHouse > 0
-                    ? 'นักกีฬาบางคนไม่ได้อยู่ในคณะสีของคุณ'
-                    : 'นักกีฬาทุกคนอาจลงสมัครในรายการนี้แล้ว');
+            if ($failLimit > 0 && $failLimit === $total) {
+                UtilController::flashError('ไม่สามารถลงทะเบียนได้', 'นักกีฬาทุกคนที่เลือกสมัครแข่งขันเต็มโควต้าแล้ว (สูงสุดคนละไม่เกิน 2 ประเภท)');
+            } else {
+                UtilController::flashError('ไม่สามารถลงทะเบียนได้',
+                    $failHouse > 0
+                        ? 'นักกีฬาบางคนไม่ได้อยู่ในคณะสีของคุณ'
+                        : 'นักกีฬาทุกคนอาจลงสมัครในรายการนี้แล้ว');
+            }
         }
 
         header('Location: index.php?route=dashboard');
