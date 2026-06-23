@@ -238,6 +238,42 @@
                                 เกียรติประวัติและพิมพ์เกียรติบัตรรางวัล
                             </h3>
                             
+                            <?php
+                                $goldCount = 0;
+                                $silverCount = 0;
+                                $bronzeCount = 0;
+                                foreach ($medals as $m) {
+                                    if ($m['medal'] === 'Gold') {
+                                        $goldCount++;
+                                    } elseif ($m['medal'] === 'Silver') {
+                                        $silverCount++;
+                                    } elseif ($m['medal'] === 'Bronze') {
+                                        $bronzeCount++;
+                                    }
+                                }
+                            ?>
+                            
+                            <?php if (!empty($medals)): ?>
+                                <!-- Medal Tally Summary Grid -->
+                                <div class="grid grid-cols-3 gap-4 mb-6">
+                                    <div class="bg-slate-900/40 backdrop-blur-md border border-yellow-500/10 rounded-2xl p-4 text-center hover:border-yellow-500/30 transition-all duration-300 shadow-[0_0_10px_rgba(234,179,8,0.03)] hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]">
+                                        <div class="text-3xl mb-1 select-none">🥇</div>
+                                        <div class="text-xs text-slate-400 font-semibold mb-0.5">เหรียญทอง</div>
+                                        <div class="text-2xl font-black text-yellow-400 font-heading"><?= $goldCount ?></div>
+                                    </div>
+                                    <div class="bg-slate-900/40 backdrop-blur-md border border-slate-400/10 rounded-2xl p-4 text-center hover:border-slate-400/30 transition-all duration-300 shadow-[0_0_10px_rgba(148,163,184,0.03)] hover:shadow-[0_0_15px_rgba(148,163,184,0.1)]">
+                                        <div class="text-3xl mb-1 select-none">🥈</div>
+                                        <div class="text-xs text-slate-400 font-semibold mb-0.5">เหรียญเงิน</div>
+                                        <div class="text-2xl font-black text-slate-300 font-heading"><?= $silverCount ?></div>
+                                    </div>
+                                    <div class="bg-slate-900/40 backdrop-blur-md border border-amber-600/10 rounded-2xl p-4 text-center hover:border-amber-600/30 transition-all duration-300 shadow-[0_0_10px_rgba(217,119,6,0.03)] hover:shadow-[0_0_15px_rgba(217,119,6,0.1)]">
+                                        <div class="text-3xl mb-1 select-none">🥉</div>
+                                        <div class="text-xs text-slate-400 font-semibold mb-0.5">เหรียญทองแดง</div>
+                                        <div class="text-2xl font-black text-amber-500 font-heading"><?= $bronzeCount ?></div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            
                             <?php if (empty($medals)): ?>
                                 <div class="bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-8 text-center text-slate-400 text-xs sm:text-sm leading-relaxed">
                                     ยังไม่มีข้อมูลรางวัลเกียรติบัตรบันทึกไว้ในแมตช์การแข่งขันของคุณ
@@ -607,6 +643,48 @@ $(document).ready(function () {
         if (sel.data('select2')) { sel.select2('destroy'); }
         row.remove();
         updateRemoveButtons();
+    });
+
+    // 1. Sync registration sport selection with lookup table filter
+    $('#sport_id').on('change', function () {
+        var sportId = $(this).val();
+        if (sportId) {
+            $('#lookup-sport-select').val(sportId).trigger('change');
+        }
+    });
+
+    // 2. Prevent selecting duplicate athletes in form submission
+    $('#register-event-form').on('submit', function (e) {
+        var selectedIds = [];
+        var hasDuplicate = false;
+        $('#athlete-rows .athlete-select').each(function () {
+            var val = $(this).val();
+            if (val) {
+                if (selectedIds.includes(val)) {
+                    hasDuplicate = true;
+                }
+                selectedIds.push(val);
+            }
+        });
+
+        if (hasDuplicate) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'พบนักกีฬาซ้ำซ้อน',
+                text: 'คุณได้เลือกนักกีฬาคนเดียวกันในหลายแถว กรุณาตรวจสอบข้อมูลการสมัครแข่งขันอีกครั้ง',
+                background: '#0d1022',
+                color: '#f1f5f9',
+                iconColor: '#f59e0b',
+                confirmButtonColor: '#6366f1',
+                customClass: {
+                    popup: 'swal-sportday-popup',
+                    title: 'swal-sportday-title',
+                    htmlContainer: 'swal-sportday-text',
+                    confirmButton: 'swal-sportday-btn',
+                }
+            });
+        }
     });
 
     updateRemoveButtons();
