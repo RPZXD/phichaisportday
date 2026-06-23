@@ -16,9 +16,11 @@
         }
     </style>
 </head>
-<body class="text-slate-100 font-body min-h-screen">
+<body class="text-slate-100 font-body min-h-screen relative overflow-x-hidden">
 
-<div class="max-w-3xl mx-auto px-4 py-12">
+<?php include __DIR__ . '/components/ambient_orbs.php'; ?>
+
+<div class="max-w-3xl mx-auto px-4 py-12 relative z-10">
     
     <!-- Header Title Section -->
     <div class="text-center mb-10">
@@ -59,43 +61,11 @@
                             $maxPoints = $r['total_points'];
                         }
                     }
-                    foreach ($leaderboard as $row): 
-                        $pct = ($row['total_points'] / $maxPoints) * 100;
-                        $houseNameTh = $presenter->getHouseNameTh($row['house_name']);
+                    foreach ($leaderboard as $row):
+                        include __DIR__ . '/components/leaderboard_row.php';
+                        $rank++;
+                    endforeach;
                 ?>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 border-l-6 border-l-[var(--house-color)] transition-all duration-200" <?= $presenter->getHouseStyle($row['color_code']) ?>>
-                        <div class="flex items-center gap-4">
-                            <!-- Rank -->
-                            <div class="text-2xl font-black w-8 text-center text-slate-400 font-heading">
-                                <?php if ($rank === 1): ?>
-                                    <span class="text-yellow-500"><i class="fa-solid fa-crown"></i></span>
-                                <?php else: ?>
-                                    <?= $rank ?>
-                                <?php endif; $rank++; ?>
-                            </div>
-                            
-                            <!-- Name and bar graph -->
-                            <div>
-                                <div class="flex flex-wrap items-center gap-2 mb-1.5">
-                                    <span class="text-base sm:text-lg font-bold text-white font-heading"><?= htmlspecialchars($houseNameTh) ?></span>
-                                    <div class="flex flex-wrap gap-1">
-                                        <span class="inline-flex bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ทอง: <?= $row['gold_count'] ?></span>
-                                        <span class="inline-flex bg-slate-300/10 text-slate-300 border border-slate-300/20 text-[9px] font-bold px-1.5 py-0.5 rounded-full">เงิน: <?= $row['silver_count'] ?></span>
-                                        <span class="inline-flex bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ทองแดง: <?= $row['bronze_count'] ?></span>
-                                    </div>
-                                </div>
-                                <div class="bg-white/5 border border-white/5 rounded-full h-1.5 w-44 sm:w-56 overflow-hidden">
-                                    <div class="h-full rounded-full bg-[var(--house-color)] shadow-[0_0_10px_rgba(var(--house-color-rgb),0.5)] transition-all duration-1000" style="width: <?= $pct ?>%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Points -->
-                        <div class="text-xl md:text-2xl font-black text-left sm:text-right text-indigo-400 shrink-0 ml-12 sm:ml-0 font-heading">
-                            <?= htmlspecialchars($row['total_points']) ?> คะแนน
-                        </div>
-                    </div>
-                <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </div>

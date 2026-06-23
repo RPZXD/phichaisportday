@@ -37,13 +37,16 @@ class AuthModel {
     /**
      * Authenticate a teacher against phichaia_student.teacher
      *
-     * @param string $teach_id
+     * @param string $username
      * @param string $password
      * @return array|false
      */
-    public function authenticateTeacher($teach_id, $password) {
-        $stmt = $this->db_main->prepare("SELECT Teach_id, Teach_name, Teach_password, password FROM teacher WHERE Teach_id = :teach_id LIMIT 1");
-        $stmt->execute([':teach_id' => $teach_id]);
+    public function authenticateTeacher($username, $password) {
+        $stmt = $this->db_main->prepare("SELECT Teach_id, Teach_name, Teach_password, password, Teach_status FROM teacher WHERE (Teach_id = :username_id OR Teach_name = :username_name) AND Teach_status = '1' LIMIT 1");
+        $stmt->execute([
+            ':username_id' => $username,
+            ':username_name' => $username
+        ]);
         $teacher = $stmt->fetch();
 
         if ($teacher) {
@@ -56,9 +59,11 @@ class AuthModel {
                 }
             }
             
-            // 2. Fall back to plain text check if not verified by hash
-            if (!$authenticated && $teacher['Teach_password'] === $password) {
-                $authenticated = true;
+            // 2. Fall back to plain text check (Teach_password or Teach_id) if not verified by hash
+            if (!$authenticated) {
+                if ($password === $teacher['Teach_id'] || (!empty($teacher['Teach_password']) && $password === $teacher['Teach_password'])) {
+                    $authenticated = true;
+                }
             }
 
             if ($authenticated) {

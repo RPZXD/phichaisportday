@@ -10,6 +10,7 @@ class TeacherController {
     private $sportModel;
     private $matchModel;
     private $resultModel;
+    private $bracketModel;
 
     public function __construct() {
         // Enforce Authentication and Role check
@@ -29,6 +30,7 @@ class TeacherController {
         $this->sportModel = new SportModel($this->db_sports);
         $this->matchModel = new MatchModel($this->db_sports, $this->db_main);
         $this->resultModel = new ResultModel($this->db_sports, $this->db_main);
+        $this->bracketModel = new BracketModel($this->db_sports);
     }
 
     /**
@@ -69,6 +71,21 @@ class TeacherController {
                 case 'record_result':
                     $this->recordMatchResult();
                     break;
+                case 'create_bracket':
+                    $this->createBracket();
+                    break;
+                case 'reset_bracket':
+                    $this->resetBracket();
+                    break;
+                case 'record_bracket_result':
+                    $this->recordBracketResult();
+                    break;
+                case 'update_match_date':
+                    $this->updateMatchDate();
+                    break;
+                case 'record_sport_results':
+                    $this->recordSportResults();
+                    break;
                 default:
                     $this->showDashboard();
                     break;
@@ -106,8 +123,21 @@ class TeacherController {
             }
         }
 
+        // Get final medals lookup for each sport
+        $sportMedals = $this->resultModel->getAllSportMedals();
+
         // Generate Leaderboard
         $leaderboard = $this->resultModel->getLeaderboard();
+
+        // Get single elimination tournament brackets
+        $selected_sport_id = filter_input(INPUT_GET, 'bracket_sport_id', FILTER_VALIDATE_INT);
+        if (!$selected_sport_id && !empty($sports)) {
+            $selected_sport_id = $sports[0]['id'];
+        }
+        $brackets = [];
+        if ($selected_sport_id) {
+            $brackets = $this->bracketModel->getBracketsBySport($selected_sport_id);
+        }
 
         // Flash messages are read and rendered by UtilController::renderFlashJS() in the view.
 
@@ -251,10 +281,10 @@ class TeacherController {
      */
     private function createMatch() {
         $sport_id = filter_input(INPUT_POST, 'sport_id', FILTER_VALIDATE_INT);
-        $event_date = filter_input(INPUT_POST, 'event_date', FILTER_SANITIZE_SPECIAL_CHARS);
+        $event_date = filter_input(INPUT_POST, 'event_date', FILTER_SANITIZE_SPECIAL_CHARS) ?: date('Y-m-d H:i:s');
 
-        if (!$sport_id || empty($event_date)) {
-            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาเลือกประเภทกีฬาและวันที่จัดการแข่งขัน');
+        if (!$sport_id) {
+            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาเลือกประเภทกีฬา');
         } else {
             $formatted_date = date('Y-m-d H:i:s', strtotime($event_date));
             if ($this->matchModel->createMatch($sport_id, $formatted_date)) {
@@ -263,7 +293,7 @@ class TeacherController {
                 UtilController::flashError('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกตารางการแข่งขันได้');
             }
         }
-        header('Location: index.php?route=dashboard');
+        header('Location: index.php?route=dashboard&tab=matches-tab');
         exit();
     }
 
@@ -313,6 +343,126 @@ class TeacherController {
         }
 
         header('Location: index.php?route=dashboard');
+        exit();
+    }
+
+    /**
+     * Create bracket for selected sport
+     */
+    private function createBracket() {
+        $sport_id = filter_input(INPUT_POST, 'sport_id', FILTER_VALIDATE_INT);
+        $teams = isset($_POST['teams']) ? $_POST['teams'] : [];
+
+        if (!$sport_id || count($teams) < 6) {
+            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุชนิดกีฬาและทีมคณะสีแข่งขันให้ครบ 6 ทีม');
+        } else {
+            try {
+                if ($this->bracketModel->create6TeamBracket($sport_id, $teams)) {
+                    UtilController::flashSuccess('สร้างสำเร็จ', 'สร้างสายการแข่งขันแบบแพ้คัดออกสำเร็จแล้ว');
+                } else {
+                    UtilController::flashError('เกิดข้อผิดพลาด', 'สายการแข่งขันของกีฬานี้ถูกสร้างไว้แล้ว');
+                }
+            } catch (Exception $e) {
+                UtilController::flashError('เกิดข้อผิดพลาด', $e->getMessage());
+            }
+        }
+        header('Location: index.php?route=dashboard&bracket_sport_id=' . $sport_id . '&tab=bracket-tab');
+        exit();
+    }
+
+    /**
+     * Reset bracket for selected sport
+     */
+    private function resetBracket() {
+        $sport_id = filter_input(INPUT_POST, 'sport_id', FILTER_VALIDATE_INT);
+
+        if (!$sport_id) {
+            UtilController::flashError('ข้อมูลไม่ถูกต้อง', 'ไม่พบรหัสชนิดกีฬา');
+        } else {
+            try {
+                if ($this->bracketModel->resetBracket($sport_id)) {
+                    UtilController::flashSuccess('ล้างข้อมูลสำเร็จ', 'ล้างข้อมูลสายการแข่งขันและผลลัพธ์ที่เกี่ยวข้องเรียบร้อยแล้ว');
+                } else {
+                    UtilController::flashError('เกิดข้อผิดพลาด', 'ไม่สามารถล้างข้อมูลได้');
+                }
+            } catch (Exception $e) {
+                UtilController::flashError('เกิดข้อผิดพลาด', $e->getMessage());
+            }
+        }
+        header('Location: index.php?route=dashboard&bracket_sport_id=' . $sport_id . '&tab=bracket-tab');
+        exit();
+    }
+
+    /**
+     * Record score/winner for bracket match
+     */
+    private function recordBracketResult() {
+        $bracket_id = filter_input(INPUT_POST, 'bracket_id', FILTER_VALIDATE_INT);
+        $sport_id = filter_input(INPUT_POST, 'sport_id', FILTER_VALIDATE_INT);
+        $team1_score = filter_input(INPUT_POST, 'team1_score', FILTER_VALIDATE_INT);
+        $team2_score = filter_input(INPUT_POST, 'team2_score', FILTER_VALIDATE_INT);
+        $winner_house_id = filter_input(INPUT_POST, 'winner_house_id', FILTER_VALIDATE_INT);
+        $points_winner = filter_input(INPUT_POST, 'points_winner', FILTER_VALIDATE_INT) ?: 0;
+        $points_loser = filter_input(INPUT_POST, 'points_loser', FILTER_VALIDATE_INT) ?: 0;
+
+        if (!$bracket_id || $team1_score === null || $team2_score === null || !$winner_house_id) {
+            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุคะแนนดิบและเลือกผู้ชนะ');
+        } else {
+            try {
+                if ($this->bracketModel->recordBracketResult($bracket_id, $team1_score, $team2_score, $winner_house_id, $points_winner, $points_loser)) {
+                    UtilController::flashSuccess('บันทึกผลสำเร็จ', 'บันทึกคะแนนดิบและเลื่อนทีมผู้ชนะเข้ารอบถัดไปเรียบร้อยแล้ว');
+                } else {
+                    UtilController::flashError('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกผลการแข่งขันได้');
+                }
+            } catch (Exception $e) {
+                UtilController::flashError('เกิดข้อผิดพลาด', $e->getMessage());
+            }
+        }
+        header('Location: index.php?route=dashboard&bracket_sport_id=' . $sport_id . '&tab=bracket-tab');
+        exit();
+    }
+
+    /**
+     * Update scheduled match date/time
+     */
+    private function updateMatchDate() {
+        $match_id = filter_input(INPUT_POST, 'match_id', FILTER_VALIDATE_INT);
+        $event_date = filter_input(INPUT_POST, 'event_date', FILTER_SANITIZE_SPECIAL_CHARS);
+
+        if (!$match_id || empty($event_date)) {
+            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุรหัสการแข่งขันและวันเวลาใหม่');
+        } else {
+            $formatted_date = date('Y-m-d H:i:s', strtotime($event_date));
+            if ($this->matchModel->updateMatchDate($match_id, $formatted_date)) {
+                UtilController::flashSuccess('แก้ไขสำเร็จ', 'แก้ไขกำหนดการแข่งขันเรียบร้อยแล้ว');
+            } else {
+                UtilController::flashError('เกิดข้อผิดพลาด', 'ไม่สามารถแก้ไขวันเวลาได้');
+            }
+        }
+        
+        header('Location: index.php?route=dashboard&tab=matches-tab');
+        exit();
+    }
+
+    /**
+     * Record final sport results (Gold, Silver, Bronze)
+     */
+    private function recordSportResults() {
+        $sport_id = filter_input(INPUT_POST, 'sport_id', FILTER_VALIDATE_INT);
+        $gold_house_id = filter_input(INPUT_POST, 'gold_house_id', FILTER_VALIDATE_INT) ?: null;
+        $silver_house_id = filter_input(INPUT_POST, 'silver_house_id', FILTER_VALIDATE_INT) ?: null;
+        $bronze_house_id = filter_input(INPUT_POST, 'bronze_house_id', FILTER_VALIDATE_INT) ?: null;
+
+        if (!$sport_id) {
+            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุชนิดกีฬา');
+        } else {
+            if ($this->resultModel->saveSportFinalResults($sport_id, $gold_house_id, $silver_house_id, $bronze_house_id)) {
+                UtilController::flashSuccess('บันทึกผลสำเร็จ', 'บันทึกคะแนนและเหรียญรางวัลของกีฬาเรียบร้อยแล้ว');
+            } else {
+                UtilController::flashError('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกผลรางวัลได้');
+            }
+        }
+        header('Location: index.php?route=dashboard&tab=matches-tab');
         exit();
     }
 }

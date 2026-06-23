@@ -62,7 +62,7 @@
         <div class="text-center mb-8">
             <h1 class="text-4xl font-black mb-2 flex items-center justify-center gap-2 select-none font-heading">
                 <i class="fa-solid fa-trophy text-[#d4af37] drop-shadow-[0_0_8px_rgba(212,175,55,0.45)]"></i>
-                <span class="bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">Phichai SportDay</span>
+                <span class="bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">Phichai Game 2026</span>
             </h1>
             <p class="text-slate-400 text-xs sm:text-sm font-semibold">ลงชื่อเข้าใช้ระบบจัดการกีฬาสีโรงเรียนพิชัย</p>
         </div>

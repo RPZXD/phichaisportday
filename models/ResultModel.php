@@ -146,4 +146,108 @@ class ResultModel {
 
         return $details;
     }
+
+    /**
+     * Save final results (Gold, Silver, Bronze) for an entire sport event
+     */
+    public function saveSportFinalResults($sport_id, $gold_house_id, $silver_house_id, $bronze_house_id) {
+        try {
+            $this->db_sports->beginTransaction();
+
+            // 1. Find or create a completed match event to hold these results
+            $stmt = $this->db_sports->prepare("
+                SELECT id FROM matches_events 
+                WHERE sport_id = :sport_id 
+                  AND id NOT IN (SELECT match_id FROM tournament_brackets)
+                LIMIT 1
+            ");
+            $stmt->execute([':sport_id' => $sport_id]);
+            $match_id = $stmt->fetchColumn();
+
+            if (!$match_id) {
+                $stmt_ins_match = $this->db_sports->prepare("
+                    INSERT INTO matches_events (sport_id, event_date, status) 
+                    VALUES (:sport_id, NOW(), 'Completed')
+                ");
+                $stmt_ins_match->execute([':sport_id' => $sport_id]);
+                $match_id = $this->db_sports->lastInsertId();
+            } else {
+                $stmt_upd_match = $this->db_sports->prepare("
+                    UPDATE matches_events SET status = 'Completed' WHERE id = :id
+                ");
+                $stmt_upd_match->execute([':id' => $match_id]);
+            }
+
+            // 2. Clear any existing results for this summary match
+            $stmt_del = $this->db_sports->prepare("DELETE FROM results WHERE match_id = :match_id");
+            $stmt_del->execute([':match_id' => $match_id]);
+
+            // 3. Insert Gold (3 points)
+            if (!empty($gold_house_id)) {
+                $stmt_ins = $this->db_sports->prepare("
+                    INSERT INTO results (match_id, house_id, points, medal) 
+                    VALUES (:match_id, :house_id, 3, 'Gold')
+                ");
+                $stmt_ins->execute([':match_id' => $match_id, ':house_id' => $gold_house_id]);
+            }
+
+            // 4. Insert Silver (2 points)
+            if (!empty($silver_house_id)) {
+                $stmt_ins = $this->db_sports->prepare("
+                    INSERT INTO results (match_id, house_id, points, medal) 
+                    VALUES (:match_id, :house_id, 2, 'Silver')
+                ");
+                $stmt_ins->execute([':match_id' => $match_id, ':house_id' => $silver_house_id]);
+            }
+
+            // 5. Insert Bronze (1 point)
+            if (!empty($bronze_house_id)) {
+                $stmt_ins = $this->db_sports->prepare("
+                    INSERT INTO results (match_id, house_id, points, medal) 
+                    VALUES (:match_id, :house_id, 1, 'Bronze')
+                ");
+                $stmt_ins->execute([':match_id' => $match_id, ':house_id' => $bronze_house_id]);
+            }
+
+            $this->db_sports->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db_sports->rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * Get final medals for all sports
+     */
+    public function getAllSportMedals() {
+        $stmt = $this->db_sports->query("
+            SELECT r.points, r.medal, r.house_id, m.sport_id, h.house_name, h.color_code
+            FROM results r
+            JOIN matches_events m ON r.match_id = m.id
+            JOIN houses h ON r.house_id = h.id
+            WHERE m.id NOT IN (SELECT match_id FROM tournament_brackets)
+        ");
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $medals = [];
+        foreach ($results as $r) {
+            $sport_id = $r['sport_id'];
+            if (!isset($medals[$sport_id])) {
+                $medals[$sport_id] = [
+                    'Gold' => null,
+                    'Silver' => null,
+                    'Bronze' => null
+                ];
+            }
+            if ($r['medal'] === 'Gold') {
+                $medals[$sport_id]['Gold'] = $r;
+            } elseif ($r['medal'] === 'Silver') {
+                $medals[$sport_id]['Silver'] = $r;
+            } elseif ($r['medal'] === 'Bronze') {
+                $medals[$sport_id]['Bronze'] = $r;
+            }
+        }
+        return $medals;
+    }
 }

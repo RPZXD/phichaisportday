@@ -16,10 +16,18 @@ class MatchModel {
      */
     public function getAllMatches() {
         $stmt = $this->db_sports->query("
-            SELECT m.*, s.sport_name, s.category 
+            SELECT m.*, s.sport_name, s.category,
+                   tb.id as bracket_id, tb.round_name, tb.round_number, tb.match_order,
+                   tb.team1_house_id, tb.team2_house_id, tb.winner_house_id,
+                   tb.team1_score, tb.team2_score,
+                   h1.house_name as team1_name, h1.color_code as team1_color,
+                   h2.house_name as team2_name, h2.color_code as team2_color
             FROM matches_events m 
             JOIN sports s ON m.sport_id = s.id 
-            ORDER BY m.event_date DESC, m.id DESC
+            LEFT JOIN tournament_brackets tb ON m.id = tb.match_id
+            LEFT JOIN houses h1 ON tb.team1_house_id = h1.id
+            LEFT JOIN houses h2 ON tb.team2_house_id = h2.id
+            ORDER BY m.id DESC
         ");
         return $stmt->fetchAll();
     }
@@ -151,5 +159,16 @@ class MatchModel {
         ");
         $stmt->execute([':student_id' => $student_id]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Update match date/time
+     */
+    public function updateMatchDate($id, $event_date) {
+        $stmt = $this->db_sports->prepare("UPDATE matches_events SET event_date = :event_date WHERE id = :id");
+        return $stmt->execute([
+            ':id' => $id,
+            ':event_date' => $event_date
+        ]);
     }
 }

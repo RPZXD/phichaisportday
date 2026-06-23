@@ -52,3 +52,26 @@ CREATE TABLE IF NOT EXISTS `results` (
     CONSTRAINT `fk_result_match` FOREIGN KEY (`match_id`) REFERENCES `matches_events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT `fk_result_house` FOREIGN KEY (`house_id`) REFERENCES `houses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 7: Tournament Brackets (Single Elimination)
+CREATE TABLE IF NOT EXISTS `tournament_brackets` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `match_id` INT NOT NULL UNIQUE,
+    `sport_id` INT NOT NULL,
+    `round_name` VARCHAR(50) NOT NULL,
+    `round_number` INT NOT NULL,
+    `match_order` INT NOT NULL,
+    `team1_house_id` INT DEFAULT NULL,
+    `team2_house_id` INT DEFAULT NULL,
+    `team1_score` INT DEFAULT NULL,
+    `team2_score` INT DEFAULT NULL,
+    `winner_house_id` INT DEFAULT NULL,
+    `next_match_id` INT DEFAULT NULL,
+    `next_match_position` ENUM('team1', 'team2') DEFAULT NULL,
+    CONSTRAINT `fk_bracket_match` FOREIGN KEY (`match_id`) REFERENCES `matches_events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_bracket_sport` FOREIGN KEY (`sport_id`) REFERENCES `sports` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_bracket_team1` FOREIGN KEY (`team1_house_id`) REFERENCES `houses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_bracket_team2` FOREIGN KEY (`team2_house_id`) REFERENCES `houses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_bracket_winner` FOREIGN KEY (`winner_house_id`) REFERENCES `houses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_bracket_next_match` FOREIGN KEY (`next_match_id`) REFERENCES `tournament_brackets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

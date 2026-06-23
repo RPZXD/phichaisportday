@@ -123,25 +123,12 @@
         }
     </style>
 </head>
-<body class="text-slate-100 font-body min-h-screen">
+<body class="text-slate-100 font-body min-h-screen relative overflow-x-hidden">
 
-<!-- Header Navbar -->
-<header class="app-header sticky top-0 z-50 bg-[#070913]/85 backdrop-blur-xl border-b border-white/5 shadow-md">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="index.php" class="brand-logo text-xl md:text-2xl font-black flex items-center gap-2 hover:scale-102 transition-transform duration-300">
-            <i class="fa-solid fa-trophy text-[#d4af37]"></i>
-            <span class="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Phichai SportDay</span>
-        </a>
-        <div class="flex items-center gap-4">
-            <span class="hidden sm:inline-flex bg-gradient-to-r from-indigo-500/10 to-purple-600/10 text-[#cbd5e1] border border-indigo-500/20 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md">ระบบนักเรียนนักกีฬา</span>
-            <div class="flex items-center gap-2 pl-3 border-l border-white/5">
-                <a href="index.php?route=login&action=logout" class="bg-white/5 hover:bg-white/10 text-white border border-white/5 hover:border-white/10 font-bold px-3.5 py-1.5 rounded-xl text-xs transition-all duration-200">ออกจากระบบ</a>
-            </div>
-        </div>
-    </div>
-</header>
+<?php include __DIR__ . '/components/ambient_orbs.php'; ?>
+<?php include __DIR__ . '/components/header.php'; ?>
 
-<main class="max-w-6xl mx-auto px-4 py-8">
+<main class="max-w-6xl mx-auto px-4 py-8 relative z-10">
     <!-- Flash alerts rendered via UtilController (SweetAlert2) -->
 
 
@@ -411,24 +398,20 @@
                     ตารางคะแนนสะสมคณะสี
                 </h3>
                 <div class="flex flex-col gap-3">
-                    <?php $rank = 1; foreach ($leaderboard as $row): 
-                        $houseNameTh = $presenter->getHouseNameTh($row['house_name']);
+                    <?php 
+                        $rank = 1; 
+                        $maxPoints = 1;
+                        foreach ($leaderboard as $r) {
+                            if ($r['total_points'] > $maxPoints) {
+                                $maxPoints = $r['total_points'];
+                            }
+                        }
+                        $isCompact = true;
+                        foreach ($leaderboard as $row): 
+                            include __DIR__ . '/components/leaderboard_row.php';
+                            $rank++;
+                        endforeach; 
                     ?>
-                        <div class="flex justify-between items-center p-3.5 rounded-xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] border-l-4 border-l-[var(--house-color)] transition-all duration-200" <?= $presenter->getHouseStyle($row['color_code']) ?>>
-                            <div class="flex items-center gap-3">
-                                <div class="text-base font-black text-slate-400 w-5 text-center"><?= $rank++ ?></div>
-                                <div>
-                                    <div class="font-bold text-white text-sm mb-0.5"><?= htmlspecialchars($houseNameTh) ?></div>
-                                    <div class="flex flex-wrap gap-1">
-                                        <span class="inline-flex bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ทอง: <?= $row['gold_count'] ?></span>
-                                        <span class="inline-flex bg-slate-300/10 text-slate-300 border border-slate-300/20 text-[9px] font-bold px-1.5 py-0.5 rounded-full">เงิน: <?= $row['silver_count'] ?></span>
-                                        <span class="inline-flex bg-orange-500/10 text-orange-400 border border-orange-500/20 text-[9px] font-bold px-1.5 py-0.5 rounded-full">ทองแดง: <?= $row['bronze_count'] ?></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-sm font-black text-indigo-400 shrink-0 ml-2"><?= htmlspecialchars($row['total_points']) ?> คะแนน</div>
-                        </div>
-                    <?php endforeach; ?>
                 </div>
             </div>
 
@@ -444,23 +427,10 @@
                         <p class="text-slate-500 text-xs text-center py-6 font-semibold">ไม่มีตารางการแข่งขันบันทึกไว้</p>
                     <?php else: ?>
                         <?php foreach ($matches as $match): ?>
-                            <div class="bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-xl p-4 flex justify-between items-center hover:translate-x-1 transition-transform duration-300">
-                                <div class="min-w-0 pr-2">
-                                    <strong class="block text-sm text-white font-bold truncate mb-0.5 font-heading"><?= htmlspecialchars($match['sport_name']) ?></strong>
-                                    <span class="text-[11px] text-slate-400 font-semibold block truncate">
-                                        <i class="fa-regular fa-clock mr-1"></i><?= $presenter->formatDate($match['event_date']) ?>
-                                    </span>
-                                </div>
-                                <div class="shrink-0 ml-2">
-                                    <?php if ($match['status'] === 'Completed'): ?>
-                                        <span class="inline-flex bg-green-500/10 text-green-400 border border-green-500/15 text-[10px] font-bold px-2 py-0.5 rounded-full">เสร็จสิ้น</span>
-                                    <?php elseif ($match['status'] === 'Live'): ?>
-                                        <span class="inline-flex bg-rose-500/10 text-rose-400 border border-rose-500/25 text-[10px] font-bold px-2 py-0.5 rounded-full items-center"><span class="live-pulse"></span>กำลังแข่ง</span>
-                                    <?php else: ?>
-                                        <span class="inline-flex bg-slate-800 text-slate-400 border border-white/5 text-[10px] font-bold px-2 py-0.5 rounded-full">รอแข่ง</span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
+                            <?php 
+                                $isDashboardList = true;
+                                include __DIR__ . '/components/match_card.php'; 
+                            ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>

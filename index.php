@@ -60,6 +60,9 @@ try {
             $matches = $matchModel->getAllMatches();
             $sports = $sportModel->getAllSports();
             
+            $bracketModel = new BracketModel($db_sports);
+            $active_brackets = $bracketModel->getAllActiveBrackets();
+            
             // Get results lookup for completed matches
             $matchResults = [];
             foreach ($matches as $match) {
