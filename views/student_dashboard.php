@@ -193,11 +193,11 @@
                     <div class="flex gap-1 overflow-x-auto border-b border-white/5 pb-1 scrollbar-none">
                         <button class="tab-btn active px-4 py-3 text-sm font-bold whitespace-nowrap cursor-pointer flex items-center gap-2" onclick="switchTab('my-stats-tab')">
                             <i class="fa-solid fa-user-tag text-indigo-400"></i>
-                            เกียรติประวัติส่วนตัว
+                            ผลการแข่งขันกีฬาของฉัน
                         </button>
                         <button class="tab-btn px-4 py-3 text-sm font-bold whitespace-nowrap cursor-pointer flex items-center gap-2" onclick="switchTab('manage-house-tab')">
                             <i class="fa-solid fa-users-gear text-purple-400"></i>
-                            ลงสมัครกีฬาคณะสี
+                            จัดการข้อมูลนักกีฬาในคณะสี
                         </button>
                     </div>
                 <?php endif; ?>
@@ -453,20 +453,65 @@
 
             <!-- Schedule Card -->
             <div class="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-[24px] p-6 shadow-lg">
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2 font-heading">
-                    <i class="fa-solid fa-calendar-days text-indigo-400"></i>
-                    ตารางการแข่งขันกีฬา
-                </h3>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2 font-heading">
+                        <i class="fa-solid fa-calendar-days text-indigo-400"></i>
+                        ตารางการแข่งขันกีฬา
+                    </h3>
+                    <?php if ($athlete): 
+                        $userHouseNameTh = $presenter->getHouseNameTh($athlete['house_name']);
+                    ?>
+                        <!-- Filter buttons -->
+                        <div class="flex bg-white/3 p-0.5 rounded-lg border border-white/5 text-[11px] self-end sm:self-auto font-heading">
+                            <button type="button" class="schedule-filter-btn px-2.5 py-1 rounded bg-indigo-600 text-white font-bold cursor-pointer transition-all duration-200" onclick="filterSchedule('all')">ทั้งหมด</button>
+                            <button type="button" class="schedule-filter-btn px-2.5 py-1 rounded text-slate-400 font-bold cursor-pointer transition-all duration-200" onclick="filterSchedule('my-color')">เฉพาะ<?= htmlspecialchars($userHouseNameTh) ?></button>
+                        </div>
+                    <?php endif; ?>
+                </div>
                 
                 <div class="max-h-[350px] overflow-y-auto pr-1 flex flex-col gap-3 scrollbar-thin scrollbar-thumb-white/10">
                     <?php if (empty($matches)): ?>
                         <p class="text-slate-500 text-xs text-center py-6 font-semibold">ไม่มีตารางการแข่งขันบันทึกไว้</p>
                     <?php else: ?>
-                        <?php foreach ($matches as $match): ?>
-                            <?php 
-                                $isDashboardList = true;
-                                include __DIR__ . '/components/match_card.php'; 
+                        <?php 
+                            $userHouseId = $athlete ? $athlete['house_id'] : null;
+                            foreach ($matches as $match): 
+                                $involvesMyHouse = false;
+                                if ($userHouseId) {
+                                    // 1. Bracket matches: check team1 or team2
+                                    if ($match['bracket_id'] !== null) {
+                                        if ($match['team1_house_id'] == $userHouseId || $match['team2_house_id'] == $userHouseId) {
+                                            $involvesMyHouse = true;
+                                        }
+                                    } else {
+                                        // 2. Non-bracket matches: general track/field sports usually involve all colors
+                                        $involvesMyHouse = true;
+                                    }
+                                    
+                                    // 3. Completed matches: check if there is a result for their house
+                                    if ($match['status'] === 'Completed') {
+                                        $thisMatchResults = isset($matchResults) && isset($matchResults[$match['id']]) ? $matchResults[$match['id']] : [];
+                                        $hasResultForMyHouse = false;
+                                        foreach ($thisMatchResults as $res) {
+                                            if ($res['house_id'] == $userHouseId) {
+                                                $hasResultForMyHouse = true;
+                                                break;
+                                            }
+                                        }
+                                        if ($match['bracket_id'] === null) {
+                                            $involvesMyHouse = $hasResultForMyHouse;
+                                        } else {
+                                            $involvesMyHouse = ($match['team1_house_id'] == $userHouseId || $match['team2_house_id'] == $userHouseId);
+                                        }
+                                    }
+                                }
                             ?>
+                            <div class="match-schedule-card transition-all duration-300" data-my-house="<?= $involvesMyHouse ? '1' : '0' ?>">
+                                <?php 
+                                    $isDashboardList = true;
+                                    include __DIR__ . '/components/match_card.php'; 
+                                ?>
+                            </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
@@ -590,6 +635,33 @@
 
     function stripos(haystack, needle) {
         return haystack.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
+    }
+
+    function filterSchedule(type) {
+        var cards = document.querySelectorAll('.match-schedule-card');
+        var buttons = document.querySelectorAll('.schedule-filter-btn');
+        
+        buttons.forEach(function (btn) {
+            if (btn.getAttribute('onclick').includes(type)) {
+                btn.classList.add('bg-indigo-600', 'text-white');
+                btn.classList.remove('text-slate-400');
+            } else {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            }
+        });
+
+        cards.forEach(function (card) {
+            if (type === 'all') {
+                card.style.display = 'block';
+            } else {
+                if (card.getAttribute('data-my-house') === '1') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
     }
 </script>
 

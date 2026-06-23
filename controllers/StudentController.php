@@ -104,6 +104,14 @@ class StudentController {
         // Get recent scheduled matches
         $matches = $this->matchModel->getAllMatches();
 
+        // Get results lookup for completed matches
+        $matchResults = [];
+        foreach ($matches as $match) {
+            if ($match['status'] === 'Completed') {
+                $matchResults[$match['id']] = $this->resultModel->getMatchResults($match['id']);
+            }
+        }
+
         // Flash messages are read and rendered by UtilController::renderFlashJS() in the view.
 
         $presenter = new SportPresenter();
