@@ -14,22 +14,20 @@ class Database {
      * Helper to retrieve credentials dynamically based on environment
      */
     private static function getCredentials() {
-        $is_local = in_array(
-            $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost',
-            ['localhost', '127.0.0.1']
-        ) || php_sapi_name() === 'cli';
-
-        if ($is_local) {
-            return [
-                'username' => 'root',
-                'password' => ''
-            ];
-        } else {
-            return [
-                'username' => 'phichaia_rpz',
-                'password' => 'r9u06D#e9'
-            ];
+        // Load custom database credentials (ignored by Git)
+        $overrideFile = __DIR__ . '/db_credentials.php';
+        if (file_exists($overrideFile)) {
+            $creds = include $overrideFile;
+            if (is_array($creds)) {
+                return $creds;
+            }
         }
+
+        // Local development fallback
+        return [
+            'username' => 'root',
+            'password' => ''
+        ];
     }
 
     /**
