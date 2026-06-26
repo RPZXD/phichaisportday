@@ -405,19 +405,35 @@
                             <i class="fa-solid fa-file-lines text-indigo-400"></i>
                             สรุปผู้สมัครลงแข่งกีฬา
                         </h3>
-                        <div class="w-full sm:w-auto flex items-center gap-2">
-                            <select id="lookup-sport-select" class="w-full sm:w-auto bg-white/3 border border-white/5 focus:border-indigo-500 focus:bg-white/5 focus:ring-3 focus:ring-indigo-500/15 rounded-xl py-2 px-3 text-white text-xs outline-none transition-all duration-200" onchange="loadSportRegistrations(this.value)">
+                        <div class="w-full sm:w-auto flex flex-wrap items-center gap-2">
+                            <select id="lookup-sport-select" class="bg-white/3 border border-white/5 focus:border-indigo-500 focus:bg-white/5 focus:ring-3 focus:ring-indigo-500/15 rounded-xl py-2 px-3 text-white text-xs outline-none transition-all duration-200" onchange="loadSportRegistrations(this.value)">
                                 <option value="">-- กรองตามประเภทกีฬา --</option>
                                 <?php foreach ($sports as $sport): ?>
                                     <option value="<?= $sport['id'] ?>"><?= htmlspecialchars($sport['sport_name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            
+                            <select id="lookup-house-select" class="bg-white/3 border border-white/5 focus:border-indigo-500 focus:bg-white/5 focus:ring-3 focus:ring-indigo-500/15 rounded-xl py-2 px-3 text-white text-xs outline-none transition-all duration-200" onchange="filterAndRenderRegistrations()">
+                                <option value="">-- กรองตามคณะสีทั้งหมด --</option>
+                                <?php foreach ($houses as $h): ?>
+                                    <option value="<?= $h['id'] ?>"><?= htmlspecialchars($presenter->getHouseNameTh($h['house_name'])) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+
                             <button type="button" onclick="printRegistrations()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-md select-none shrink-0">
                                 <i class="fa-solid fa-print"></i>
                                 พิมพ์รายชื่อ
                             </button>
+
+                            <button type="button" onclick="exportRegistrationsCsv()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-md select-none shrink-0">
+                                <i class="fa-solid fa-file-excel"></i>
+                                ส่งออก CSV
+                            </button>
                         </div>
                     </div>
+
+                    <!-- Missing Registrations Indicator -->
+                    <div id="missing-houses-container" class="mb-4"></div>
 
                     <div class="overflow-x-auto w-full rounded-xl border border-white/5">
                         <table class="w-full text-left border-collapse text-sm">
@@ -1189,6 +1205,9 @@
 
 
 <script>
+    let currentLoadedRegs = [];
+    const allHousesList = <?php echo json_encode($houses); ?>;
+
     function switchTab(tabId) {
         const panes = document.querySelectorAll('.tab-pane');
         panes.forEach(pane => pane.classList.remove('active'));
@@ -1459,41 +1478,178 @@
 
     function loadSportRegistrations(sportId) {
         const body = document.getElementById('registrations-lookup-body');
+        const missingContainer = document.getElementById('missing-houses-container');
+        
+        currentLoadedRegs = [];
+        
         if (!sportId) {
             body.innerHTML = '<tr><td colspan="2" class="p-8 text-center text-slate-500">กรุณาเลือกประเภทกีฬาด้านบนเพื่อเรียกแสดงรายชื่อ</td></tr>';
+            missingContainer.innerHTML = '';
             return;
         }
 
         body.innerHTML = '<tr><td colspan="2" class="p-8 text-center text-slate-500">กำลังดึงข้อมูลรายชื่อนักกีฬา...</td></tr>';
+        missingContainer.innerHTML = '';
+
+        document.getElementById('lookup-house-select').value = '';
 
         fetch('index.php?route=get_sport_regs&sport_id=' + sportId)
             .then(res => res.json())
             .then(data => {
-                body.innerHTML = '';
-                if (data.length === 0) {
-                    body.innerHTML = '<tr><td colspan="2" class="p-8 text-center text-slate-500">ยังไม่มีรายชื่อนักกีฬาลงทะเบียนแข่งขันในรายการนี้</td></tr>';
-                } else {
-                    data.forEach(reg => {
-                        const tr = document.createElement('tr');
-                        tr.className = 'border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors house-indicator';
-                        
-                        let houseNameTh = getHouseNameTh(reg.house_name);
-
-                        tr.setAttribute('style', `--house-color: ${reg.color_code}; --house-color-rgb: ${hexToRgb(reg.color_code)};`);
-                        
-                        tr.innerHTML = `
-                            <td class="p-3.5">
-                                <strong class="block text-white">${reg.student_name}</strong>
-                                <span class="text-xs text-slate-400">รหัสประจำตัว: ${reg.student_id} | ชั้น ม.${reg.grade_level}/${reg.room_number}</span>
-                            </td>
-                            <td class="p-3.5">
-                                <span class="badge house-badge text-[11px]">${houseNameTh}</span>
-                            </td>
-                        `;
-                        body.appendChild(tr);
-                    });
-                }
+                currentLoadedRegs = data;
+                filterAndRenderRegistrations();
+            })
+            .catch(err => {
+                console.error("Error in loadSportRegistrations:", err);
+                body.innerHTML = '<tr><td colspan="2" class="p-8 text-center text-red-400">ไม่สามารถดึงข้อมูลรายชื่อนักกีฬาได้</td></tr>';
             });
+    }
+
+    function filterAndRenderRegistrations() {
+        const body = document.getElementById('registrations-lookup-body');
+        const houseFilter = document.getElementById('lookup-house-select').value;
+        const missingContainer = document.getElementById('missing-houses-container');
+        
+        body.innerHTML = '';
+        
+        if (currentLoadedRegs.length === 0) {
+            body.innerHTML = '<tr><td colspan="2" class="p-8 text-center text-slate-500">ยังไม่มีรายชื่อนักกีฬาลงทะเบียนแข่งขันในรายการนี้</td></tr>';
+            missingContainer.innerHTML = `
+                <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500 text-base mt-0.5 animate-pulse"></i>
+                    <div>
+                        <h4 class="text-xs font-bold text-white mb-1">ยังไม่มีคณะสีใดลงทะเบียนแข่งขันในรายการนี้</h4>
+                        <p class="text-[11px] text-slate-400">กรุณาลงทะเบียนนักกีฬาของแต่ละคณะสีก่อนเริ่มสร้างสายแข่ง</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const registeredHouseIds = new Set(currentLoadedRegs.map(r => Number(r.house_id)));
+        const missingHouses = allHousesList.filter(h => !registeredHouseIds.has(Number(h.id)));
+        
+        if (missingHouses.length === 0) {
+            missingContainer.innerHTML = `
+                <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-2.5 text-xs text-emerald-400 font-semibold">
+                    <i class="fa-solid fa-circle-check text-base"></i>
+                    <span>ทุกคณะสีลงทะเบียนเรียบร้อยแล้ว (ครบทั้ง 8 คณะสี)</span>
+                </div>
+            `;
+        } else {
+            const missingNames = missingHouses.map(h => `<span class="px-1.5 py-0.5 bg-amber-500/15 border border-amber-500/25 rounded-md text-amber-400 font-bold scale-90 inline-block m-0.5">สี${escapeHtml(getHouseNameTh(h.house_name))}</span>`).join(' ');
+            missingContainer.innerHTML = `
+                <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-start gap-3">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500 text-base mt-0.5 animate-pulse"></i>
+                    <div>
+                        <h4 class="text-xs font-bold text-white mb-1">มีคณะสีที่ยังไม่ได้ลงทะเบียนรายการนี้ (${missingHouses.length} คณะสี)</h4>
+                        <div class="text-[11px] text-slate-400 mt-1 flex flex-wrap items-center">สีที่ค้างอยู่: ${missingNames}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        let filtered = currentLoadedRegs;
+        if (houseFilter) {
+            filtered = currentLoadedRegs.filter(r => r.house_id == houseFilter);
+        }
+        
+        if (filtered.length === 0) {
+            body.innerHTML = '<tr><td colspan="2" class="p-8 text-center text-slate-500">ไม่มีข้อมูลนักกีฬาในคณะสีที่เลือก</td></tr>';
+            return;
+        }
+        
+        filtered.forEach(reg => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors house-indicator';
+            
+            let houseNameTh = getHouseNameTh(reg.house_name);
+            tr.setAttribute('style', `--house-color: ${reg.color_code}; --house-color-rgb: ${hexToRgb(reg.color_code)};`);
+            
+            tr.innerHTML = `
+                <td class="p-3.5">
+                    <strong class="block text-white">${reg.student_name}</strong>
+                    <span class="text-xs text-slate-400">รหัสประจำตัว: ${reg.student_id} | ชั้น ม.${reg.grade_level}/${reg.room_number}</span>
+                </td>
+                <td class="p-3.5">
+                    <span class="badge house-badge text-[11px]">${houseNameTh}</span>
+                </td>
+            `;
+            body.appendChild(tr);
+        });
+    }
+
+    function exportRegistrationsCsv() {
+        const sportSelect = document.getElementById('lookup-sport-select');
+        const sportId = sportSelect.value;
+        if (!sportId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'กรุณาเลือกประเภทกีฬา',
+                text: 'กรุณาเลือกชนิดกีฬาที่ต้องการส่งออกข้อมูลก่อนครับ',
+                background: '#0f172a',
+                color: '#f1f5f9',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        const sportName = sportSelect.options[sportSelect.selectedIndex].text;
+
+        if (currentLoadedRegs.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ไม่มีข้อมูล',
+                text: 'ไม่มีรายชื่อนักกีฬาสำหรับส่งออกในชนิดกีฬานี้',
+                background: '#0f172a',
+                color: '#f1f5f9',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        const houseSelect = document.getElementById('lookup-house-select');
+        const selectedHouseId = houseSelect.value;
+        let exportData = currentLoadedRegs;
+        let houseSuffix = '';
+        
+        if (selectedHouseId) {
+            exportData = currentLoadedRegs.filter(r => r.house_id == selectedHouseId);
+            const houseName = houseSelect.options[houseSelect.selectedIndex].text;
+            houseSuffix = `_คณะสี${houseName}`;
+        }
+
+        if (exportData.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ไม่มีข้อมูลสำหรับคณะสีที่เลือก',
+                text: 'ไม่มีรายชื่อนักกีฬาสำหรับส่งออกภายใต้เงื่อนไขตัวกรองนี้',
+                background: '#0f172a',
+                color: '#f1f5f9',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        let csvContent = "\uFEFF"; // UTF-8 BOM for Excel compatibility
+        csvContent += "ชื่อนักกีฬา,รหัสประจำตัว,ระดับชั้น,คณะสี,ชนิดกีฬา\n";
+
+        exportData.forEach(r => {
+            const houseNameTh = getHouseNameTh(r.house_name);
+            const className = `ม.${r.grade_level}/${r.room_number}`;
+            const name = r.student_name.replace(/"/g, '""');
+            csvContent += `"${name}","${r.student_id}","${className}","${houseNameTh}","${sportName}"\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `รายชื่อนักกีฬา_${sportName.trim().replace(/\s+/g, '_')}${houseSuffix}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     function printRegistrations() {
