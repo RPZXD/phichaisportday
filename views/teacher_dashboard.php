@@ -1655,7 +1655,10 @@
                                 <tbody>
                                     ${athletes.map(a => `
                                         <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                            <td class="py-2.5 font-semibold text-white">${escapeHtml(a.student_name)}</td>
+                                            <td class="py-2.5 font-semibold text-white">
+                                                ${escapeHtml(a.student_name)}
+                                                <span class="block text-[11px] text-slate-400 font-normal">ชั้น ม.${escapeHtml(a.grade_level)}/${escapeHtml(a.room_number)}</span>
+                                            </td>
                                             <td class="py-2.5 text-right text-xs text-slate-400">${escapeHtml(a.student_id)}</td>
                                         </tr>
                                     `).join('')}

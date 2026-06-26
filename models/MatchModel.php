@@ -124,7 +124,8 @@ class MatchModel {
         $stmt = $this->db_sports->prepare("
             SELECT er.id as registration_id, er.student_id, er.sport_id,
                    s.Stu_name, s.Stu_sur,
-                   ch.house_id, h.house_name, h.color_code
+                   ch.house_id, h.house_name, h.color_code,
+                   ch.grade_level, ch.room_number
             FROM event_registrations er
             JOIN phichaia_student.student s ON er.student_id = s.Stu_id
             JOIN classroom_houses ch ON SUBSTRING(s.Stu_major, 1, 1) = ch.grade_level AND s.Stu_room = ch.room_number
