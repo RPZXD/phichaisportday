@@ -1,3 +1,44 @@
+<?php
+/**
+ * Dynamic Student Certificate View
+ * Loads settings from database and renders layout coordinates configured by the teacher.
+ */
+$award = CertificateModel::getAwardDetails($certificate['medal']);
+$houseNameTh = $presenter->getHouseNameTh($certificate['house_name']);
+
+$months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+$event_time = strtotime($certificate['event_date']);
+$day = date('j', $event_time);
+$month = $months[date('n', $event_time) - 1];
+$year = date('Y', $event_time) + 543;
+
+// Format dynamic token replacements
+$body_line_3 = str_replace(
+    ['{sport_name}', '{category}', '{medal_name}', '{house_name}'],
+    [htmlspecialchars($certificate['sport_name']), htmlspecialchars($certificate['category']), $award['name'], htmlspecialchars($houseNameTh)],
+    $settings['body_pattern_3']
+);
+
+// Determine border and background classes
+$bgStyleClass = 'bg-white text-slate-900 border-[20px] border-double';
+$borderColor = $settings['border_color'] ?: '#d4af37';
+
+switch ($settings['bg_style']) {
+    case 'emerald-premium':
+        $bgStyleClass = 'bg-[#fcfdfa] text-slate-900 border-[20px] border-double';
+        break;
+    case 'royal-purple':
+        $bgStyleClass = 'bg-[#faf9fc] text-slate-900 border-[20px] border-double';
+        break;
+    case 'minimal-blue':
+        $bgStyleClass = 'bg-[#fafcfe] text-slate-900 border-[16px] border-solid';
+        break;
+    case 'classic-gold':
+    default:
+        $bgStyleClass = 'bg-white text-slate-900 border-[20px] border-double';
+        break;
+}
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -29,34 +70,12 @@
             }
 
             .certificate-container {
-                border: 18px double #c5a02b !important;
-                padding: 4rem !important;
-                background-color: #fff !important;
-                color: #000 !important;
                 box-shadow: none !important;
                 width: 100% !important;
                 max-width: 100% !important;
                 margin: 0 !important;
                 aspect-ratio: 1.414 / 1 !important;
                 page-break-after: avoid;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-            }
-            
-            .cert-name {
-                color: #000 !important;
-                border-bottom-color: #c5a02b !important;
-            }
-            
-            .cert-logo {
-                color: #725d19 !important;
-            }
-            
-            .cert-title {
-                color: #1e293b !important;
-                border-bottom-color: rgba(197, 160, 43, 0.4) !important;
             }
         }
     </style>
@@ -81,114 +100,109 @@
 </div>
 
 <!-- Landscape A4 Certificate Card -->
-<div class="certificate-container w-full max-w-4xl aspect-[1.414/1] bg-white text-slate-900 border-[20px] border-double border-[#d4af37] rounded-sm p-6 sm:p-16 relative shadow-2xl shadow-yellow-500/5 flex flex-col items-center justify-between text-center box-border overflow-hidden select-none">
+<div class="certificate-container w-full max-w-4xl aspect-[1.414/1] <?= $bgStyleClass ?> rounded-sm relative shadow-2xl shadow-yellow-500/5 box-border overflow-hidden select-none"
+     style="border-color: <?= $borderColor ?>;">
     
     <!-- Inner Border Line -->
-    <div class="absolute inset-[10px] border-2 border-[#d4af37] pointer-events-none z-10"></div>
+    <div class="absolute inset-[10px] border-2 pointer-events-none z-10" style="border-color: <?= $borderColor ?>55;"></div>
     
     <!-- Ornate Corners -->
-    <div class="absolute w-10 h-10 border-5 border-[#d4af37] z-20 top-[20px] left-[20px] border-r-0 border-b-0"></div>
-    <div class="absolute w-10 h-10 border-5 border-[#d4af37] z-20 top-[20px] right-[20px] border-l-0 border-b-0"></div>
-    <div class="absolute w-10 h-10 border-5 border-[#d4af37] z-20 bottom-[20px] left-[20px] border-r-0 border-t-0"></div>
-    <div class="absolute w-10 h-10 border-5 border-[#d4af37] z-20 bottom-[20px] right-[20px] border-l-0 border-t-0"></div>
+    <div class="absolute w-10 h-10 border-5 z-20 top-[20px] left-[20px] border-r-0 border-b-0" style="border-color: <?= $borderColor ?>;"></div>
+    <div class="absolute w-10 h-10 border-5 z-20 top-[20px] right-[20px] border-l-0 border-b-0" style="border-color: <?= $borderColor ?>;"></div>
+    <div class="absolute w-10 h-10 border-5 z-20 bottom-[20px] left-[20px] border-r-0 border-t-0" style="border-color: <?= $borderColor ?>;"></div>
+    <div class="absolute w-10 h-10 border-5 z-20 bottom-[20px] right-[20px] border-l-0 border-t-0" style="border-color: <?= $borderColor ?>;"></div>
 
     <!-- Trophy Watermark -->
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 opacity-[0.035] text-[#d4af37] pointer-events-none z-0">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 opacity-[0.03] pointer-events-none z-0" style="color: <?= $borderColor ?>;">
         <i class="fa-solid fa-trophy text-[320px]"></i>
     </div>
 
-    <!-- Content Wrapper -->
-    <div class="relative z-30 w-full h-full flex flex-col items-center justify-between">
+    <!-- 1. Header Text -->
+    <div class="absolute left-0 right-0 text-center select-none font-heading uppercase" 
+         style="top: <?= $layout['header_text']['top'] ?>%; font-size: <?= $layout['header_text']['fontSize'] ?>px; color: <?= $layout['header_text']['color'] ?>; font-weight: <?= $layout['header_text']['fontWeight'] === 'black' ? 900 : ($layout['header_text']['fontWeight'] === 'bold' ? 700 : 500) ?>;">
+        <?= htmlspecialchars($settings['header_title']) ?>
+    </div>
+
+    <!-- 2. Main Title -->
+    <div class="absolute left-0 right-0 text-center select-none font-heading tracking-wider uppercase" 
+         style="top: <?= $layout['main_title']['top'] ?>%; font-size: <?= $layout['main_title']['fontSize'] ?>px; color: <?= $layout['main_title']['color'] ?>; font-weight: <?= $layout['main_title']['fontWeight'] === 'black' ? 900 : 700 ?>;">
+        <?= htmlspecialchars($settings['cert_title']) ?>
+    </div>
+
+    <!-- 3. Prefix Text -->
+    <div class="absolute left-0 right-0 text-center select-none text-slate-500 uppercase font-semibold" 
+         style="top: <?= $layout['prefix_text']['top'] ?>%; font-size: <?= $layout['prefix_text']['fontSize'] ?>px; color: <?= $layout['prefix_text']['color'] ?>;">
+        <?= htmlspecialchars($settings['body_pattern_1']) ?>
+    </div>
+
+    <!-- 4. Student Name -->
+    <div class="absolute left-0 right-0 text-center select-none font-heading" 
+         style="top: <?= $layout['student_name']['top'] ?>%; font-size: <?= $layout['student_name']['fontSize'] ?>px; color: <?= $layout['student_name']['color'] ?>; font-weight: 900;">
+        <span class="border-b-2 border-dashed border-[#d4af37]/45 px-12 pb-1">
+            <?= htmlspecialchars($certificate['student_name']) ?>
+        </span>
+    </div>
+
+    <!-- 5. Body Line 1 (House name details) -->
+    <div class="absolute left-0 right-0 text-center select-none leading-relaxed" 
+         style="top: <?= $layout['body_line1']['top'] ?>%; font-size: <?= $layout['body_line1']['fontSize'] ?>px; color: <?= $layout['body_line1']['color'] ?>;">
+        <?= htmlspecialchars($settings['body_pattern_2']) ?>
+        <span class="font-black underline decoration-[#d4af37]/45 underline-offset-4" style="color: <?= htmlspecialchars($certificate['color_code']) ?>;">
+            คณะ<?= htmlspecialchars($houseNameTh) ?>
+        </span>
+    </div>
+
+    <!-- 6. Medal Badge -->
+    <div class="absolute left-0 right-0 text-center select-none" 
+         style="top: <?= $layout['medal_badge']['top'] ?>%; font-size: <?= $layout['medal_badge']['fontSize'] ?>px;">
+        <span class="inline-flex items-center gap-2 px-6 py-1.5 rounded-full font-black bg-gradient-to-r <?= $award['badge_bg'] ?> border border-[#d4af37]/45 text-[#8a6d1c] uppercase shadow-sm select-none"
+              style="color: <?= $award['color'] ?>; border-color: <?= $borderColor ?>88;">
+            <?= $award['emoji'] ?> <?= $award['name'] ?>
+        </span>
+    </div>
+
+    <!-- 7. Body Line 2 (Sport name & Category) -->
+    <div class="absolute left-0 right-0 text-center select-none leading-relaxed" 
+         style="top: <?= $layout['body_line2']['top'] ?>%; font-size: <?= $layout['body_line2']['fontSize'] ?>px; color: <?= $layout['body_line2']['color'] ?>;">
+        <?= $body_line_3 ?>
+    </div>
+
+    <!-- 8. Date Text -->
+    <div class="absolute left-0 right-0 text-center select-none font-semibold" 
+         style="top: <?= $layout['date_text']['top'] ?>%; font-size: <?= $layout['date_text']['fontSize'] ?>px; color: <?= $layout['date_text']['color'] ?>;">
+        ให้ไว้ ณ วันที่ <?= $day ?> เดือน <?= $month ?> พ.ศ. <?= $year ?>
+    </div>
+
+    <!-- 9. Signatures Block -->
+    <div class="absolute left-0 right-0 px-16 flex justify-between items-end font-semibold" 
+         style="top: <?= $layout['signatures']['top'] ?>%; font-size: <?= $layout['signatures']['fontSize'] ?>px; color: <?= $layout['signatures']['color'] ?>;">
+        <!-- Left Signature -->
+        <div class="w-48 text-center shrink-0">
+            <div class="w-full border-t border-slate-300 pt-2 text-slate-500 uppercase tracking-wider">
+                <?= htmlspecialchars($settings['sig_left_title']) ?>
+            </div>
+        </div>
         
-        <!-- Header -->
-        <div class="mt-2">
-            <div class="text-base sm:text-xl font-black tracking-widest text-[#8a6d1c] font-heading uppercase mb-1 flex items-center justify-center gap-1.5 cert-logo">
-                🏆 การแข่งขันกีฬาสีโรงเรียน ประจำปี 2569
-            </div>
-            <div class="font-heading text-2xl sm:text-4xl font-black text-slate-800 tracking-wider uppercase border-b-3 border-double border-[#d4af37]/45 pb-1 w-fit mx-auto mt-2 cert-title">
-                เกียรติบัตรเหรียญรางวัล
+        <!-- Center spacing for Gold Seal -->
+        <div class="w-24 h-24 select-none pointer-events-none"></div>
+
+        <!-- Right Signature -->
+        <div class="w-48 text-center shrink-0">
+            <div class="w-full border-t border-slate-300 pt-2 text-slate-500 uppercase tracking-wider">
+                <?= htmlspecialchars($settings['sig_right_title']) ?>
             </div>
         </div>
+    </div>
 
-        <!-- Body -->
-        <div class="my-4 max-w-2xl">
-            <p class="text-slate-500 text-xs sm:text-sm tracking-widest font-semibold uppercase mb-2">เกียรติบัตรฉบับนี้ให้ไว้เพื่อแสดงว่า</p>
-            <div class="font-heading text-3xl sm:text-5xl font-black text-slate-900 border-b-2 border-dashed border-[#d4af37]/50 w-fit mx-auto mb-4 px-6 sm:px-12 pb-1.5 cert-name">
-                <?= htmlspecialchars($certificate['student_name']) ?>
-            </div>
-            
-            <?php
-                $houseNameTh = $presenter->getHouseNameTh($certificate['house_name']);
-
-                $medalTh = $certificate['medal'];
-                if ($certificate['medal'] === 'Gold') $medalTh = 'เหรียญทอง';
-                elseif ($certificate['medal'] === 'Silver') $medalTh = 'เหรียญเงิน';
-                elseif ($certificate['medal'] === 'Bronze') $medalTh = 'เหรียญทองแดง';
-            ?>
-            <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-3">
-                ได้เข้าร่วมการแข่งขันและสร้างผลงานอันยอดเยี่ยมรุ่งโรจน์ในนามสังกัด
-                <span class="font-black text-slate-900 underline decoration-[#d4af37]/40 underline-offset-4 cert-highlight" style="color: <?= htmlspecialchars($certificate['color_code']) ?>;">
-                    คณะ<?= htmlspecialchars($houseNameTh) ?>
-                </span>
-            </p>
-
-            <div class="text-slate-600 text-sm sm:text-base leading-relaxed">
-                ได้รับรางวัลชนะเลิศอันดับเกียรติยศสูงสุด
-                <div>
-                    <span class="inline-flex items-center gap-2 px-6 py-1.5 rounded-full text-base sm:text-lg font-black bg-gradient-to-r from-amber-500/10 to-yellow-500/15 border border-[#d4af37]/45 text-[#8a6d1c] uppercase my-3 shadow-sm shadow-[#d4af37]/5 medal-badge-inline">
-                        <?php 
-                            if ($certificate['medal'] === 'Gold') echo '🥇 ';
-                            elseif ($certificate['medal'] === 'Silver') echo '🥈 ';
-                            elseif ($certificate['medal'] === 'Bronze') echo '🥉 ';
-                        ?>
-                        <?= htmlspecialchars($medalTh) ?>
-                    </span>
-                </div>
-                <div>
-                    ในประเภทกีฬา <span class="font-black text-slate-900 cert-highlight"><?= htmlspecialchars($certificate['sport_name']) ?></span> (หมวดหมู่: <?= htmlspecialchars($certificate['category']) ?>)
-                </div>
-            </div>
-            
-            <?php
-                $months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
-                $event_time = strtotime($certificate['event_date']);
-                $day = date('j', $event_time);
-                $month = $months[date('n', $event_time) - 1];
-                $year = date('Y', $event_time) + 543;
-            ?>
-            <p class="text-xs text-slate-500 font-semibold mt-4">
-                ให้ไว้ ณ วันที่ <?= $day ?> เดือน <?= $month ?> พ.ศ. <?= $year ?>
-            </p>
-        </div>
-
-        <!-- Footer Signatures & Seal -->
-        <div class="flex justify-between items-end w-full px-4 sm:px-8 mt-2 cert-footer">
-            
-            <!-- Left Signature -->
-            <div class="w-48 text-center shrink-0 signature-block">
-                <div class="w-full border-t border-slate-300 pt-2 text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider signature-line">
-                    ผู้อำนวยการจัดการแข่งขัน
-                </div>
-            </div>
-            
-            <!-- Gold Seal -->
-            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-r from-amber-200 via-amber-300 to-[#d4af37] border-2 border-dashed border-amber-600 flex flex-col items-center justify-center text-[10px] font-black text-[#8a6d1c] shadow-lg shadow-yellow-500/20 relative -rotate-12 select-none gold-seal">
-                <span class="text-[8px] tracking-widest text-[#8a6d1c]/80">★ ★ ★</span>
-                <span class="my-0.5">ชนะเลิศ</span>
-                <span class="text-[8px] font-heading font-black tracking-wider">ตราประทับ</span>
-                <div class="absolute bottom-[-15px] z-[-1] w-16 h-10 flex justify-between ribbon-tails">
-                    <div class="w-6 h-12 bg-[#d4af37] opacity-85 rotate-[20deg] -translate-x-[10px] -translate-y-[5px] [clip-path:polygon(0_0,100%_0,100%_100%,50%_80%,0_100%)] ribbon-tail-1"></div>
-                    <div class="w-6 h-12 bg-[#d4af37] opacity-85 -rotate-[20deg] translate-x-[10px] -translate-y-[5px] [clip-path:polygon(0_0,100%_0,100%_100%,50%_80%,0_100%)] ribbon-tail-2"></div>
-                </div>
-            </div>
-
-            <!-- Right Signature -->
-            <div class="w-48 text-center shrink-0 signature-block">
-                <div class="w-full border-t border-slate-300 pt-2 text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider signature-line">
-                    ประธานสภากีฬาโรงเรียน
-                </div>
-            </div>
-            
+    <!-- 10. Gold Seal -->
+    <div class="absolute left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-amber-200 via-amber-300 to-[#d4af37] border-2 border-dashed border-amber-600 flex flex-col items-center justify-center text-[10px] font-black text-[#8a6d1c] shadow-lg shadow-yellow-500/20 -rotate-12 select-none"
+         style="top: <?= $layout['seal']['top'] ?>%; width: <?= 80 * $layout['seal']['scale'] ?>px; height: <?= 80 * $layout['seal']['scale'] ?>px; transform: translateX(-50%) scale(<?= $layout['seal']['scale'] ?>);">
+        <span class="text-[6px] tracking-widest text-[#8a6d1c]/80">★ ★ ★</span>
+        <span class="my-0.5 text-[10px]">ชนะเลิศ</span>
+        <span class="text-[7px] font-heading font-black tracking-wider">ตราประทับ</span>
+        <div class="absolute bottom-[-15px] z-[-1] w-16 h-10 flex justify-between ribbon-tails">
+            <div class="w-5 h-10 bg-[#d4af37] opacity-85 rotate-[20deg] -translate-x-[5px] [clip-path:polygon(0_0,100%_0,100%_100%,50%_80%,0_100%)]"></div>
+            <div class="w-5 h-10 bg-[#d4af37] opacity-85 -rotate-[20deg] translate-x-[5px] [clip-path:polygon(0_0,100%_0,100%_100%,50%_80%,0_100%)]"></div>
         </div>
     </div>
 </div>

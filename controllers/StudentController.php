@@ -28,6 +28,7 @@ class StudentController {
         $this->matchModel = new MatchModel($this->db_sports, $this->db_main);
         $this->resultModel = new ResultModel($this->db_sports, $this->db_main);
         $this->sportModel = new SportModel($this->db_sports);
+        $this->certificateModel = new CertificateModel($this->db_sports, $this->db_main);
     }
 
     /**
@@ -156,6 +157,34 @@ class StudentController {
             exit();
         }
 
+        $settings = $this->certificateModel->getActiveSettings();
+        if (!$settings) {
+            $settings = [
+                'bg_style' => 'classic-gold',
+                'border_color' => '#d4af37',
+                'header_title' => '🏆 การแข่งขันกีฬาสีโรงเรียน ประจำปี 2569',
+                'cert_title' => 'เกียรติบัตรเหรียญรางวัล',
+                'body_pattern_1' => 'ได้เข้าร่วมการแข่งขันและสร้างผลงานอันยอดเยี่ยมรุ่งโรจน์ในนามสังกัด',
+                'body_pattern_2' => 'ได้รับรางวัลชนะเลิศอันดับเกียรติยศสูงสุด',
+                'body_pattern_3' => 'ในประเภทกีฬา {sport_name} (หมวดหมู่: {category})',
+                'sig_left_title' => 'ผู้อำนวยการจัดการแข่งขัน',
+                'sig_right_title' => 'ประธานสภากีฬาโรงเรียน',
+                'layout_json' => json_encode([
+                    "header_text" => [ "top" => 12, "fontSize" => 18, "color" => "#8a6d1c", "fontWeight" => "black" ],
+                    "main_title"  => [ "top" => 20, "fontSize" => 36, "color" => "#1e293b", "fontWeight" => "black" ],
+                    "prefix_text" => [ "top" => 36, "fontSize" => 14, "color" => "#64748b", "fontWeight" => "semibold" ],
+                    "student_name" => [ "top" => 42, "fontSize" => 44, "color" => "#0f172a", "fontWeight" => "black" ],
+                    "body_line1"  => [ "top" => 54, "fontSize" => 16, "color" => "#475569", "fontWeight" => "normal" ],
+                    "medal_badge" => [ "top" => 62, "fontSize" => 18, "color" => "#8a6d1c", "fontWeight" => "black" ],
+                    "body_line2"  => [ "top" => 72, "fontSize" => 16, "color" => "#475569", "fontWeight" => "normal" ],
+                    "date_text"   => [ "top" => 80, "fontSize" => 12, "color" => "#64748b", "fontWeight" => "semibold" ],
+                    "signatures"  => [ "top" => 86, "fontSize" => 12, "color" => "#64748b", "fontWeight" => "semibold" ],
+                    "seal"        => [ "top" => 78, "scale" => 1.0 ]
+                ])
+            ];
+        }
+
+        $layout = json_decode($settings['layout_json'], true) ?: [];
         $presenter = new SportPresenter();
 
         require_once __DIR__ . '/../views/certificate.php';

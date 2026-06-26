@@ -90,6 +90,15 @@ try {
             $controller->handleRequest();
             break;
 
+        case 'teacher_certificate':
+            if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'teacher') {
+                header('Location: index.php?route=dashboard');
+                exit();
+            }
+            $controller = new TeacherCertificateController();
+            $controller->handleRequest();
+            break;
+
         case 'leaderboard':
         case 'certificate':
             // Accessible to students and teachers via StudentController handles

@@ -1185,9 +1185,11 @@
                         <div class="px-1">
                             <select name="medal[<?= $house['id'] ?>]" class="w-full bg-white/3 border border-white/5 focus:border-indigo-500 focus:bg-white/5 rounded-lg py-1.5 px-2 text-white text-xs outline-none transition-all">
                                 <option value="">ไม่มีเหรียญ</option>
-                                <option value="Gold">เหรียญทอง 🥇</option>
-                                <option value="Silver">เหรียญเงิน 🥈</option>
-                                <option value="Bronze">เหรียญทองแดง 🥉</option>
+                                <option value="Gold">เหรียญทอง 🥇 (ชนะเลิศ)</option>
+                                <option value="Silver">เหรียญเงิน 🥈 (รองชนะเลิศอันดับที่ 1)</option>
+                                <option value="Bronze">เหรียญทองแดง 🥉 (รองชนะเลิศอันดับที่ 2)</option>
+                                <option value="RunnerUp3">รองชนะเลิศอันดับที่ 3 🏅</option>
+                                <option value="Participant">เข้าร่วมการแข่งขัน (ที่ 5 - 6) 🌟</option>
                             </select>
                         </div>
                     </div>

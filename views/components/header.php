@@ -23,6 +23,17 @@ $pathPrefix = $isOnLanding ? '' : 'index.php';
         <?php if ($isLoggedIn): ?>
             <!-- Logged-in State (Dashboard Mode) -->
             <div class="flex items-center gap-4">
+                <nav class="hidden md:flex items-center gap-4 mr-2 font-bold text-xs select-none">
+                    <a href="index.php?route=dashboard" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-all <?= (!isset($route) || $route === 'dashboard') ? 'bg-white/5 text-white' : '' ?>">
+                        <i class="fa-solid fa-gauge mr-1"></i>แดชบอร์ด
+                    </a>
+                    <?php if ($userRole === 'teacher'): ?>
+                        <a href="index.php?route=teacher_certificate" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-all <?= (isset($route) && $route === 'teacher_certificate') ? 'bg-white/5 text-white' : '' ?>">
+                            <i class="fa-solid fa-certificate mr-1 text-[#d4af37]"></i>ออกแบบเกียรติบัตร
+                        </a>
+                    <?php endif; ?>
+                </nav>
+
                 <?php if ($userRole === 'teacher'): ?>
                     <span class="hidden sm:inline-flex bg-gradient-to-r from-indigo-500/15 to-purple-600/15 text-indigo-300 border border-indigo-500/25 text-xs font-bold px-4 py-1.5 rounded-full shadow-md select-none animate-float-badge">
                         <i class="fa-solid fa-user-shield mr-1.5"></i>ระบบจัดการอาจารย์
