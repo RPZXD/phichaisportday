@@ -1530,7 +1530,7 @@
         printWindow.document.write(`
             <html>
             <head>
-                <title>รายชื่อนักกีฬา - \${sportName}</title>
+                <title>รายชื่อนักกีฬา - ${sportName}</title>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
                     body {
@@ -1595,7 +1595,7 @@
             </head>
             <body>
                 <h1>รายชื่อผู้สมัครลงแข่งขันกีฬา</h1>
-                <div class="subtitle">ชนิดกีฬา: \${sportName} | กีฬาสีโรงเรียนพิชัย</div>
+                <div class="subtitle">ชนิดกีฬา: ${sportName} | กีฬาสีโรงเรียนพิชัย</div>
                 <table>
                     <thead>
                         <tr>
@@ -1604,7 +1604,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        \${bodyContent}
+                        ${bodyContent}
                     </tbody>
                 </table>
                 <script>
@@ -1653,10 +1653,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    \${athletes.map(a => `
+                                    ${athletes.map(a => `
                                         <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                            <td class="py-2.5 font-semibold text-white">\${escapeHtml(a.student_name)}</td>
-                                            <td class="py-2.5 text-right text-xs text-slate-400">\${escapeHtml(a.student_id)}</td>
+                                            <td class="py-2.5 font-semibold text-white">${escapeHtml(a.student_name)}</td>
+                                            <td class="py-2.5 text-right text-xs text-slate-400">${escapeHtml(a.student_id)}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -1667,8 +1667,8 @@
 
                 Swal.fire({
                     title: `<div class="flex items-center justify-center gap-2 text-lg font-bold font-heading">
-                                <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" style="background-color: \${houseColor}"></span>
-                                รายชื่อนักกีฬา คณะสี\${escapeHtml(houseName)}
+                                <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" style="background-color: ${houseColor}"></span>
+                                รายชื่อนักกีฬา คณะสี${escapeHtml(houseName)}
                             </div>`,
                     html: htmlContent,
                     background: '#0f172a',
