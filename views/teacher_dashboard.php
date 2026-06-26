@@ -405,13 +405,17 @@
                             <i class="fa-solid fa-file-lines text-indigo-400"></i>
                             สรุปผู้สมัครลงแข่งกีฬา
                         </h3>
-                        <div class="w-full sm:w-auto">
+                        <div class="w-full sm:w-auto flex items-center gap-2">
                             <select id="lookup-sport-select" class="w-full sm:w-auto bg-white/3 border border-white/5 focus:border-indigo-500 focus:bg-white/5 focus:ring-3 focus:ring-indigo-500/15 rounded-xl py-2 px-3 text-white text-xs outline-none transition-all duration-200" onchange="loadSportRegistrations(this.value)">
                                 <option value="">-- กรองตามประเภทกีฬา --</option>
                                 <?php foreach ($sports as $sport): ?>
                                     <option value="<?= $sport['id'] ?>"><?= htmlspecialchars($sport['sport_name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <button type="button" onclick="printRegistrations()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-md select-none shrink-0">
+                                <i class="fa-solid fa-print"></i>
+                                พิมพ์รายชื่อ
+                            </button>
                         </div>
                     </div>
 
@@ -881,7 +885,9 @@
                                     </div>
                                     
                                     <!-- Team 1 -->
-                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?> <?= $b['team1_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team1_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team1_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) . '\', \'' . ($b['team1_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team1_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2 h-2 rounded-full shrink-0" style="background-color: <?= $b['team1_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team1_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) : 'TBD' ?>
@@ -890,7 +896,9 @@
                                     </div>
 
                                     <!-- Team 2 -->
-                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?> <?= $b['team2_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team2_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team2_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) . '\', \'' . ($b['team2_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team2_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2 h-2 rounded-full shrink-0" style="background-color: <?= $b['team2_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team2_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) : 'TBD' ?>
@@ -924,7 +932,9 @@
                                     </div>
                                     
                                     <!-- Team 1 (Bye Team) -->
-                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?> <?= $b['team1_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team1_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team1_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) . '\', \'' . ($b['team1_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team1_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2 h-2 rounded-full shrink-0" style="background-color: <?= $b['team1_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team1_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) : 'TBD' ?>
@@ -934,7 +944,9 @@
                                     </div>
 
                                     <!-- Team 2 (Winner of Quarter-final) -->
-                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-white' : 'text-slate-300' ?> <?= $b['team2_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team2_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team2_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) . '\', \'' . ($b['team2_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team2_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2 h-2 rounded-full shrink-0" style="background-color: <?= $b['team2_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team2_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) : 'รอผู้ชนะคู่ ' . ($b['match_order'] == 1 ? '1' : '2') ?>
@@ -981,7 +993,9 @@
                                     </div>
                                     
                                     <!-- Team 1 -->
-                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-yellow-400' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-yellow-400' : 'text-slate-300' ?> <?= $b['team1_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team1_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team1_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) . '\', \'' . ($b['team1_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team1_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <?= $b['team1_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team1_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) : 'รอผู้ชนะรอบรอง 1' ?>
@@ -990,7 +1004,9 @@
                                     </div>
 
                                     <!-- Team 2 -->
-                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-yellow-400' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-yellow-400' : 'text-slate-300' ?> <?= $b['team2_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team2_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team2_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) . '\', \'' . ($b['team2_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team2_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <?= $b['team2_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team2_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) : 'รอผู้ชนะรอบรอง 2' ?>
@@ -1022,7 +1038,9 @@
                                     </div>
                                     
                                     <!-- Team 1 -->
-                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-amber-500' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-amber-500' : 'text-slate-300' ?> <?= $b['team1_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team1_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team1_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) . '\', \'' . ($b['team1_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team1_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <?= $b['team1_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team1_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) : 'รอผู้แพ้รอบรอง 1' ?>
@@ -1031,7 +1049,9 @@
                                     </div>
 
                                     <!-- Team 2 -->
-                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-amber-500' : 'text-slate-300' ?>">
+                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-amber-500' : 'text-slate-300' ?> <?= $b['team2_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                         <?= $b['team2_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team2_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) . '\', \'' . ($b['team2_color'] ?: '#334155') . '\')"' : '' ?>
+                                         <?= $b['team2_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <?= $b['team2_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team2_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) : 'รอผู้แพ้รอบรอง 2' ?>
@@ -1473,6 +1493,203 @@
                         body.appendChild(tr);
                     });
                 }
+            });
+    }
+
+    function printRegistrations() {
+        const sportSelect = document.getElementById('lookup-sport-select');
+        const sportId = sportSelect.value;
+        if (!sportId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'กรุณาเลือกประเภทกีฬา',
+                text: 'กรุณาเลือกชนิดกีฬาที่ต้องการพิมพ์รายชื่อก่อนครับ',
+                background: '#0f172a',
+                color: '#f1f5f9',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        const sportName = sportSelect.options[sportSelect.selectedIndex].text;
+        const bodyContent = document.getElementById('registrations-lookup-body').innerHTML;
+
+        if (bodyContent.includes('กรุณาเลือก') || bodyContent.includes('ยังไม่มีรายชื่อ')) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ไม่มีรายชื่อนักกีฬา',
+                text: 'ไม่มีข้อมูลนักกีฬาที่จะพิมพ์ในชนิดกีฬานี้',
+                background: '#0f172a',
+                color: '#f1f5f9',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>รายชื่อนักกีฬา - \${sportName}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+                    body {
+                        font-family: 'Sarabun', sans-serif;
+                        padding: 40px;
+                        color: #333;
+                    }
+                    h1 {
+                        text-align: center;
+                        font-size: 22px;
+                        margin-bottom: 5px;
+                    }
+                    .subtitle {
+                        text-align: center;
+                        font-size: 14px;
+                        color: #666;
+                        margin-bottom: 30px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 12px 15px;
+                        text-align: left;
+                        font-size: 14px;
+                    }
+                    th {
+                        background-color: #f8fafc !important;
+                        font-weight: bold;
+                        color: #0f172a;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    .text-slate-400 {
+                        color: #64748b;
+                        font-size: 12px;
+                        display: block;
+                        margin-top: 2px;
+                    }
+                    .badge {
+                        display: inline-block;
+                        padding: 4px 10px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        font-weight: bold;
+                        background-color: #f1f5f9;
+                        border: 1px solid #cbd5e1;
+                        color: #334155;
+                    }
+                    .house-badge {
+                        background-color: var(--house-color) !important;
+                        color: #fff !important;
+                        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                        border: none;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>รายชื่อผู้สมัครลงแข่งขันกีฬา</h1>
+                <div class="subtitle">ชนิดกีฬา: \${sportName} | กีฬาสีโรงเรียนพิชัย</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ชื่อนักกีฬา / รหัสประจำตัว</th>
+                            <th>คณะสี</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        \${bodyContent}
+                    </tbody>
+                </table>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() { window.close(); }, 500);
+                    }
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    function showTeamAthletes(sportId, houseId, houseName, houseColor) {
+        if (!houseId) return;
+
+        Swal.fire({
+            title: 'กำลังโหลดรายชื่อนักกีฬา...',
+            html: '<div class="flex justify-center py-4"><i class="fa-solid fa-circle-notch fa-spin text-teal-400 text-3xl"></i></div>',
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            background: '#0f172a',
+            color: '#f1f5f9',
+            customClass: {
+                popup: 'border border-white/10 rounded-[24px]'
+            }
+        });
+
+        fetch('index.php?route=get_sport_regs&sport_id=' + sportId)
+            .then(res => res.json())
+            .then(data => {
+                const athletes = data.filter(r => r.house_id == houseId);
+                let htmlContent = '';
+
+                if (athletes.length === 0) {
+                    htmlContent = `<div class="text-center py-8 text-slate-400 text-sm">ยังไม่มีนักกีฬาลงสมัครแข่งขันในประเภทนี้</div>`;
+                } else {
+                    htmlContent = `
+                        <div class="text-left mt-2 max-h-64 overflow-y-auto pr-1">
+                            <table class="w-full text-sm text-slate-300">
+                                <thead>
+                                    <tr class="border-b border-white/10 text-xs text-slate-400 font-bold uppercase tracking-wider text-left">
+                                        <th class="pb-2">ชื่อนักกีฬา</th>
+                                        <th class="pb-2 text-right">รหัสประจำตัว</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    \${athletes.map(a => `
+                                        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                            <td class="py-2.5 font-semibold text-white">\${escapeHtml(a.student_name)}</td>
+                                            <td class="py-2.5 text-right text-xs text-slate-400">\${escapeHtml(a.student_id)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                Swal.fire({
+                    title: `<div class="flex items-center justify-center gap-2 text-lg font-bold font-heading">
+                                <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" style="background-color: \${houseColor}"></span>
+                                รายชื่อนักกีฬา คณะสี\${escapeHtml(houseName)}
+                            </div>`,
+                    html: htmlContent,
+                    background: '#0f172a',
+                    color: '#f1f5f9',
+                    confirmButtonText: 'ปิดหน้าต่าง',
+                    confirmButtonColor: '#14b8a6', // teal-500
+                    customClass: {
+                        popup: 'border border-white/10 rounded-[24px]',
+                        confirmButton: 'rounded-xl text-xs px-5 py-2.5 font-bold cursor-pointer'
+                    }
+                });
+            })
+            .catch(err => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถดึงข้อมูลรายชื่อนักกีฬาได้',
+                    background: '#0f172a',
+                    color: '#f1f5f9',
+                    confirmButtonColor: '#6366f1'
+                });
             });
     }
 
