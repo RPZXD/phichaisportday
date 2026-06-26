@@ -132,6 +132,15 @@
 
     <!-- Flash alerts rendered via UtilController (SweetAlert2) -->
 
+    <?php
+    $uncreated_count = 0;
+    foreach ($sports as $s) {
+        if (!isset($s['bracket_count']) || $s['bracket_count'] == 0) {
+            $uncreated_count++;
+        }
+    }
+    ?>
+
     <!-- Responsive Tabs Navigation -->
     <div class="tabs-container">
         <button class="tab-btn active" onclick="switchTab('athletes-tab')">
@@ -153,6 +162,9 @@
         <button class="tab-btn" onclick="switchTab('bracket-tab')">
             <i class="fa-solid fa-diagram-project text-teal-400"></i>
             สายการแข่งขัน (Bracket)
+            <?php if ($uncreated_count > 0): ?>
+                <span class="ml-1 px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-slate-950 rounded-full"><?= $uncreated_count ?></span>
+            <?php endif; ?>
         </button>
     </div>
 
@@ -719,12 +731,30 @@
                         <select id="bracket-sport-select" class="w-full sm:w-auto bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-teal-500 transition-colors" onchange="changeBracketSport(this.value)">
                             <?php foreach ($sports as $s): ?>
                                 <option value="<?= $s['id'] ?>" <?= $s['id'] == $selected_sport_id ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($s['sport_name']) ?> (<?= htmlspecialchars($s['category']) ?>)
+                                    <?= htmlspecialchars($s['sport_name']) ?> (<?= htmlspecialchars($s['category']) ?>) - <?= (isset($s['bracket_count']) && $s['bracket_count'] > 0) ? 'สร้างสายแล้ว' : 'ยังไม่ได้สร้างสาย' ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
+
+                <?php 
+                $uncreated_sports = [];
+                foreach ($sports as $s) {
+                    if (!isset($s['bracket_count']) || $s['bracket_count'] == 0) {
+                        $uncreated_sports[] = htmlspecialchars($s['sport_name']) . ' (' . htmlspecialchars($s['category']) . ')';
+                    }
+                }
+                if (!empty($uncreated_sports)): 
+                ?>
+                    <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-6 flex items-start gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500 text-lg mt-0.5 animate-pulse"></i>
+                        <div>
+                            <h4 class="text-xs font-bold text-white mb-1">กีฬาที่ยังไม่ได้สร้างสายการแข่งขัน (<?= count($uncreated_sports) ?> รายการ)</h4>
+                            <p class="text-[11px] text-slate-400">กีฬาที่ค้างอยู่: <?= implode(', ', $uncreated_sports) ?></p>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <?php if (empty($brackets)): ?>
                     <!-- Generator form (6 teams) -->

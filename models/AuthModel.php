@@ -42,7 +42,7 @@ class AuthModel {
      * @return array|false
      */
     public function authenticateTeacher($username, $password) {
-        $stmt = $this->db_main->prepare("SELECT Teach_id, Teach_name, Teach_password, password, Teach_status FROM teacher WHERE (Teach_id = :username_id OR Teach_name = :username_name) AND Teach_status = '1' LIMIT 1");
+        $stmt = $this->db_main->prepare("SELECT Teach_id, Teach_name, Teach_password, password, Teach_status, Teach_major FROM teacher WHERE (Teach_id = :username_id OR Teach_name = :username_name) AND Teach_status = '1' LIMIT 1");
         $stmt->execute([
             ':username_id' => $username,
             ':username_name' => $username
@@ -70,7 +70,8 @@ class AuthModel {
                 return [
                     'id' => $teacher['Teach_id'],
                     'name' => trim($teacher['Teach_name']),
-                    'role' => 'teacher'
+                    'role' => 'teacher',
+                    'Teach_major' => $teacher['Teach_major']
                 ];
             }
         }

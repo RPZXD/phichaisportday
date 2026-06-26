@@ -51,6 +51,16 @@ class AuthController {
         $user = false;
         if ($role === 'teacher') {
             $user = $this->authModel->authenticateTeacher($username, $password);
+            if ($user) {
+                $allowed_majors = ['คอมพิวเตอร์', 'สุขศึกษาและพลศึกษา'];
+                if (!in_array($user['Teach_major'], $allowed_majors)) {
+                    UtilController::flashError('เข้าสู่ระบบไม่สำเร็จ', 'เฉพาะครูกลุ่มสาระคอมพิวเตอร์ หรือ สุขศึกษาและพลศึกษา เท่านั้นที่สามารถเข้าสู่ระบบได้');
+                    $_SESSION['old_username'] = $username;
+                    $_SESSION['old_role'] = $role;
+                    header('Location: index.php?route=login');
+                    exit();
+                }
+            }
         } else {
             $user = $this->authModel->authenticateStudent($username, $password);
         }

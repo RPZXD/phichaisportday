@@ -13,7 +13,12 @@ class SportModel {
      * Get all sports sorted by name
      */
     public function getAllSports() {
-        $stmt = $this->db_sports->query("SELECT * FROM sports ORDER BY sport_name ASC");
+        $stmt = $this->db_sports->query("
+            SELECT s.*, 
+                   (SELECT COUNT(*) FROM tournament_brackets b WHERE b.sport_id = s.id) as bracket_count 
+            FROM sports s 
+            ORDER BY s.sport_name ASC
+        ");
         return $stmt->fetchAll();
     }
 
