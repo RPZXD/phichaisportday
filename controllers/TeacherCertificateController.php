@@ -66,6 +66,8 @@ class TeacherCertificateController {
                 'body_pattern_3' => 'ในประเภทกีฬา {sport_name} (หมวดหมู่: {category})',
                 'sig_left_title' => 'ผู้อำนวยการจัดการแข่งขัน',
                 'sig_right_title' => 'ประธานสภากีฬาโรงเรียน',
+                'font_style' => 'Kanit',
+                'show_logos' => 1,
                 'layout_json' => json_encode([
                     "header_text" => [ "top" => 12, "fontSize" => 18, "color" => "#8a6d1c", "fontWeight" => "black" ],
                     "main_title"  => [ "top" => 20, "fontSize" => 36, "color" => "#1e293b", "fontWeight" => "black" ],
@@ -80,6 +82,10 @@ class TeacherCertificateController {
                 ])
             ];
         }
+
+        // Fill missing database keys for backward compatibility
+        if (!isset($settings['font_style'])) $settings['font_style'] = 'Kanit';
+        if (!isset($settings['show_logos'])) $settings['show_logos'] = 1;
 
         $layout = json_decode($settings['layout_json'], true) ?: [];
         $winners = $this->certificateModel->getMedalWinners();
@@ -101,6 +107,8 @@ class TeacherCertificateController {
         $body_pattern_3 = filter_input(INPUT_POST, 'body_pattern_3', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
         $sig_left_title = filter_input(INPUT_POST, 'sig_left_title', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'ผู้อำนวยการจัดการแข่งขัน';
         $sig_right_title = filter_input(INPUT_POST, 'sig_right_title', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'ประธานสภากีฬาโรงเรียน';
+        $font_style = filter_input(INPUT_POST, 'font_style', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'Kanit';
+        $show_logos = isset($_POST['show_logos']) ? 1 : 0;
 
         // Extract slider coordinate settings
         $positions = isset($_POST['pos']) ? $_POST['pos'] : [];
@@ -132,7 +140,9 @@ class TeacherCertificateController {
             'body_pattern_3' => $body_pattern_3,
             'sig_left_title' => $sig_left_title,
             'sig_right_title' => $sig_right_title,
-            'layout_json' => json_encode($layout)
+            'layout_json' => json_encode($layout),
+            'font_style' => $font_style,
+            'show_logos' => $show_logos
         ];
 
         try {

@@ -39,7 +39,9 @@ class CertificateModel {
                     body_pattern_3 = :body_pattern_3,
                     sig_left_title = :sig_left_title,
                     sig_right_title = :sig_right_title,
-                    layout_json = :layout_json
+                    layout_json = :layout_json,
+                    font_style = :font_style,
+                    show_logos = :show_logos
                 WHERE id = :id
             ");
             return $stmt_upd->execute([
@@ -53,13 +55,15 @@ class CertificateModel {
                 ':sig_left_title' => $data['sig_left_title'],
                 ':sig_right_title' => $data['sig_right_title'],
                 ':layout_json' => $data['layout_json'],
+                ':font_style' => $data['font_style'],
+                ':show_logos' => $data['show_logos'],
                 ':id' => $id
             ]);
         } else {
             $stmt_ins = $this->db_sports->prepare("
                 INSERT INTO certificate_settings 
-                (template_name, bg_style, border_color, header_title, cert_title, body_pattern_1, body_pattern_2, body_pattern_3, sig_left_title, sig_right_title, layout_json, is_active)
-                VALUES ('Custom Template', :bg_style, :border_color, :header_title, :cert_title, :body_pattern_1, :body_pattern_2, :body_pattern_3, :sig_left_title, :sig_right_title, :layout_json, 1)
+                (template_name, bg_style, border_color, header_title, cert_title, body_pattern_1, body_pattern_2, body_pattern_3, sig_left_title, sig_right_title, layout_json, font_style, show_logos, is_active)
+                VALUES ('Custom Template', :bg_style, :border_color, :header_title, :cert_title, :body_pattern_1, :body_pattern_2, :body_pattern_3, :sig_left_title, :sig_right_title, :layout_json, :font_style, :show_logos, 1)
             ");
             return $stmt_ins->execute([
                 ':bg_style' => $data['bg_style'],
@@ -71,7 +75,9 @@ class CertificateModel {
                 ':body_pattern_3' => $data['body_pattern_3'],
                 ':sig_left_title' => $data['sig_left_title'],
                 ':sig_right_title' => $data['sig_right_title'],
-                ':layout_json' => $data['layout_json']
+                ':layout_json' => $data['layout_json'],
+                ':font_style' => $data['font_style'],
+                ':show_logos' => $data['show_logos']
             ]);
         }
     }

@@ -10,6 +10,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ออกแบบและจัดการเกียรติบัตร - SportDay</title>
+    <!-- Google Fonts for multiple choice customizer -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700;900&family=Sarabun:wght@300;400;500;700;800&family=Charm:wght@400;700&family=Mali:wght@400;600;700&family=Itim&family=Srisakdi:wght@400;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS v4 Browser CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Font Awesome v6 -->
@@ -30,9 +34,7 @@
             width: 100%;
             aspect-ratio: 1.414 / 1;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            background-color: #ffffff;
-            color: #0f172a;
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
             user-select: none;
             transition: all 0.3s ease;
@@ -50,6 +52,15 @@
         .slider-group:hover {
             background-color: rgba(255, 255, 255, 0.04);
             border-color: rgba(99, 102, 241, 0.2);
+        }
+
+        /* Slow mandala rotation */
+        @keyframes spin-slow {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 25s linear infinite;
         }
     </style>
 </head>
@@ -79,14 +90,14 @@ require_once __DIR__ . '/components/header.php';
                 
                 <!-- Presets & Style -->
                 <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">1. ธีมและสไตล์พื้นหลัง</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">1. ธีมและสไตล์พื้นหลัง (Modern Presets)</h3>
                     <div class="grid grid-cols-2 gap-2.5">
                         <label class="flex flex-col gap-1 p-3 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition-all">
                             <input type="radio" name="bg_style" value="classic-gold" class="hidden" <?= $settings['bg_style'] === 'classic-gold' ? 'checked' : '' ?> onchange="changeBgStyle('classic-gold')">
                             <span class="text-xs font-bold text-white flex items-center gap-1.5">
                                 <span class="w-3 h-3 rounded-full bg-[#d4af37]"></span> Classic Gold
                             </span>
-                            <span class="text-[10px] text-slate-400">กรอบทองสองเส้นดั้งเดิม</span>
+                            <span class="text-[10px] text-slate-400">กรอบทองเรโทรคลาสสิก</span>
                         </label>
                         
                         <label class="flex flex-col gap-1 p-3 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition-all">
@@ -94,7 +105,7 @@ require_once __DIR__ . '/components/header.php';
                             <span class="text-xs font-bold text-white flex items-center gap-1.5">
                                 <span class="w-3 h-3 rounded-full bg-emerald-600"></span> Emerald Green
                             </span>
-                            <span class="text-[10px] text-slate-400">กรอบเขียวมรกตคู่พรีเมียม</span>
+                            <span class="text-[10px] text-slate-400">กรอบเขียวมรกตเรขาคณิต</span>
                         </label>
 
                         <label class="flex flex-col gap-1 p-3 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition-all">
@@ -102,7 +113,7 @@ require_once __DIR__ . '/components/header.php';
                             <span class="text-xs font-bold text-white flex items-center gap-1.5">
                                 <span class="w-3 h-3 rounded-full bg-purple-700"></span> Royal Purple
                             </span>
-                            <span class="text-[10px] text-slate-400">กรอบม่วงราชวงศ์โบราณ</span>
+                            <span class="text-[10px] text-slate-400">กรอบม่วงโมเดิร์นหรูหรา</span>
                         </label>
 
                         <label class="flex flex-col gap-1 p-3 rounded-xl border border-white/5 bg-white/2 hover:bg-white/5 cursor-pointer transition-all">
@@ -110,23 +121,49 @@ require_once __DIR__ . '/components/header.php';
                             <span class="text-xs font-bold text-white flex items-center gap-1.5">
                                 <span class="w-3 h-3 rounded-full bg-sky-500"></span> Minimal Blue
                             </span>
-                            <span class="text-[10px] text-slate-400">กรอบฟ้าเดี่ยวทันสมัย</span>
+                            <span class="text-[10px] text-slate-400">กรอบฟ้ามินิมอลลายเส้น</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Custom Border Color -->
-                <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/2">
-                    <div>
-                        <span class="text-xs font-bold text-white block">กำหนดสีขอบและตราประทับเอง</span>
-                        <span class="text-[10px] text-slate-400">กำหนดสี Accent หลักของเทมเพลต</span>
+                <!-- Font Selection dropdown -->
+                <div>
+                    <label class="text-[10px] text-slate-400 font-bold block mb-1">2. แบบฟอนต์ตัวอักษร (Font Family)</label>
+                    <select name="font_style" id="select-font-style" class="w-full bg-white/3 border border-white/5 focus:border-indigo-500 focus:bg-white/5 rounded-xl py-2 px-3 text-white text-xs outline-none transition-all cursor-pointer" onchange="changeFontStyle(this.value)">
+                        <option value="Kanit" <?= $settings['font_style'] === 'Kanit' ? 'selected' : '' ?>>(แนะนำ) Kanit - โมเดิร์นพรีเมียม</option>
+                        <option value="Sarabun" <?= $settings['font_style'] === 'Sarabun' ? 'selected' : '' ?>>Sarabun - ทางการ/มีระเบียบ</option>
+                        <option value="Charm" <?= $settings['font_style'] === 'Charm' ? 'selected' : '' ?>>Charm - ลายมือเขียนอ่อนช้อย</option>
+                        <option value="Mali" <?= $settings['font_style'] === 'Mali' ? 'selected' : '' ?>>Mali - อบอุ่น/ธรรมชาติ</option>
+                        <option value="Itim" <?= $settings['font_style'] === 'Itim' ? 'selected' : '' ?>>Itim - มนกลม/ตัวหนาเด่น</option>
+                        <option value="Srisakdi" <?= $settings['font_style'] === 'Srisakdi' ? 'selected' : '' ?>>Srisakdi - เอกลักษณ์สไตล์ไทย</option>
+                    </select>
+                </div>
+
+                <!-- Custom Border Color & Logos toggle -->
+                <div class="flex flex-col gap-2.5">
+                    <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/2">
+                        <div>
+                            <span class="text-xs font-bold text-white block">กำหนดสีขอบเกียรติบัตรเอง</span>
+                            <span class="text-[10px] text-slate-400">เปลี่ยนสีหลักของกรอบและลาย</span>
+                        </div>
+                        <input type="color" name="border_color" id="border_color_input" value="<?= htmlspecialchars($settings['border_color']) ?>" class="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 outline-none" oninput="changeBorderColor(this.value)">
                     </div>
-                    <input type="color" name="border_color" id="border_color_input" value="<?= htmlspecialchars($settings['border_color']) ?>" class="w-10 h-10 rounded-lg cursor-pointer bg-transparent border-0 outline-none" oninput="changeBorderColor(this.value)">
+
+                    <div class="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/2">
+                        <div>
+                            <span class="text-xs font-bold text-white block">แสดงโลโก้ขนาบหัวกระดาษ</span>
+                            <span class="text-[10px] text-slate-400">โลโก้โรงเรียน (ซ้าย) & กีฬาสี (ขวา)</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="show_logos" id="checkbox-show-logos" value="1" class="sr-only peer" <?= $settings['show_logos'] ? 'checked' : '' ?> onchange="toggleLogosPreview(this.checked)">
+                            <div class="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Text Customization -->
                 <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">2. กำหนดข้อความหลัก</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">3. กำหนดเนื้อหาข้อความ</h3>
                     <div class="flex flex-col gap-3">
                         <div>
                             <label class="text-[10px] text-slate-400 font-bold block mb-1">หัวข้อเกียรติบัตร (Header Title)</label>
@@ -165,7 +202,7 @@ require_once __DIR__ . '/components/header.php';
                 <!-- Position Coordinates Sliders -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">3. จัดตำแหน่งข้อความต่างๆ (Y-Offset & Size)</h3>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">4. จัดวางตำแหน่ง (Y-Offset & Font-Size)</h3>
                         <button type="button" onclick="resetLayoutDefaults()" class="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer">
                             คืนค่าเริ่มต้น
                         </button>
@@ -274,21 +311,51 @@ require_once __DIR__ . '/components/header.php';
             </div>
 
             <!-- Visual Simulated A4 Canvas -->
-            <div class="cert-preview-box" id="preview-canvas-box" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;">
+            <div class="cert-preview-box" id="preview-canvas-box" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>; font-family: 'Kanit', sans-serif;">
                 
+                <!-- Modern Background Graphic Layers -->
+                <div class="absolute inset-0 pointer-events-none z-0 bg-layers">
+                    <!-- Radial Lighting Glow -->
+                    <div class="absolute inset-0" style="background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 80%);"></div>
+                    <!-- Bottom Abstract Wave -->
+                    <svg class="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] opacity-[0.06] text-current pointer-events-none transition-colors" id="bg-wave-left" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="currentColor" style="color: <?= htmlspecialchars($settings['border_color']) ?>;">
+                        <path d="M0,200 C100,280 200,120 300,240 C350,300 380,350 400,400 L0,400 Z"></path>
+                    </svg>
+                    <!-- Top Abstract Wave -->
+                    <svg class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] opacity-[0.06] text-current pointer-events-none rotate-180 transition-colors" id="bg-wave-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="currentColor" style="color: <?= htmlspecialchars($settings['border_color']) ?>;">
+                        <path d="M0,200 C100,280 200,120 300,240 C350,300 380,350 400,400 L0,400 Z"></path>
+                    </svg>
+                    <!-- Rotating Central Geometric Mandala Watermark -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] opacity-[0.035] flex items-center justify-center text-current transition-colors" id="preview-watermark-container" style="color: <?= htmlspecialchars($settings['border_color']) ?>;">
+                        <svg class="w-full h-full animate-spin-slow" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="0.5">
+                            <circle cx="100" cy="100" r="80" stroke-dasharray="1 3"/>
+                            <circle cx="100" cy="100" r="70"/>
+                            <circle cx="100" cy="100" r="60" stroke-dasharray="4 2"/>
+                            <path d="M100,10 L100,190 M10,100 L190,100 M36.36,36.36 L163.64,163.64 M36.36,163.64 L163.64,36.36"/>
+                            <polygon points="100,30 120,70 170,70 130,100 150,150 100,120 50,150 70,100 30,70 80,70"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Flanking School & SportDay Logos -->
+                <img src="assets/logo_phichai.png" id="preview-logo-left" class="absolute top-[25px] left-[35px] z-30 h-[38px] w-auto object-contain pointer-events-none transition-all" style="display: <?= $settings['show_logos'] ? 'block' : 'none' ?>;">
+                <img src="assets/logo.png" id="preview-logo-right" class="absolute top-[25px] right-[35px] z-30 h-[38px] w-auto object-contain pointer-events-none transition-all" style="display: <?= $settings['show_logos'] ? 'block' : 'none' ?>;">
+
                 <!-- Inner Border -->
                 <div class="absolute inset-[10px] border-2 pointer-events-none z-10" id="preview-inner-border" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>55;"></div>
                 
-                <!-- Corners -->
-                <div class="absolute w-10 h-10 border-5 z-20 top-[20px] left-[20px] border-r-0 border-b-0 orn-corner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
-                <div class="absolute w-10 h-10 border-5 z-20 top-[20px] right-[20px] border-l-0 border-b-0 orn-corner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
-                <div class="absolute w-10 h-10 border-5 z-20 bottom-[20px] left-[20px] border-r-0 border-t-0 orn-corner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
-                <div class="absolute w-10 h-10 border-5 z-20 bottom-[20px] right-[20px] border-l-0 border-t-0 orn-corner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
+                <!-- Modern Geometric Corners (Outer and Inner Angle bars) -->
+                <div class="absolute w-8 h-8 z-20 top-[15px] left-[15px] border-t-2 border-l-2 orn-corner" id="corner-tl" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
+                <div class="absolute w-2.5 h-2.5 z-20 top-[20px] left-[20px] border-t border-l orn-corner-inner" id="corner-tl-inner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>88;"></div>
 
-                <!-- Watermark -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 opacity-[0.03] pointer-events-none z-0 flex items-center justify-center" id="preview-watermark" style="color: <?= htmlspecialchars($settings['border_color']) ?>;">
-                    <i class="fa-solid fa-trophy text-[220px]"></i>
-                </div>
+                <div class="absolute w-8 h-8 z-20 top-[15px] right-[15px] border-t-2 border-r-2 orn-corner" id="corner-tr" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
+                <div class="absolute w-2.5 h-2.5 z-20 top-[20px] right-[20px] border-t border-r orn-corner-inner" id="corner-tr-inner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>88;"></div>
+
+                <div class="absolute w-8 h-8 z-20 bottom-[15px] left-[15px] border-b-2 border-l-2 orn-corner" id="corner-bl" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
+                <div class="absolute w-2.5 h-2.5 z-20 bottom-[20px] left-[20px] border-b border-l orn-corner-inner" id="corner-bl-inner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>88;"></div>
+
+                <div class="absolute w-8 h-8 z-20 bottom-[15px] right-[15px] border-b-2 border-r-2 orn-corner" id="corner-br" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>;"></div>
+                <div class="absolute w-2.5 h-2.5 z-20 bottom-[20px] right-[20px] border-b border-r orn-corner-inner" id="corner-br-inner" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>88;"></div>
 
                 <!-- 1. Header Text -->
                 <div class="absolute left-0 right-0 text-center select-none font-heading uppercase" id="preview-header_text">
@@ -307,7 +374,7 @@ require_once __DIR__ . '/components/header.php';
 
                 <!-- 4. Student Name -->
                 <div class="absolute left-0 right-0 text-center select-none font-heading" id="preview-student_name">
-                    <span class="border-b-2 border-dashed border-[#d4af37]/45 px-12 pb-1" id="preview-student_name_val">นาย สมศักดิ์ รักกีฬา</span>
+                    <span class="border-b-2 border-dashed border-[#d4af37]/45 px-12 pb-1" id="preview-student_name_val" style="border-color: <?= htmlspecialchars($settings['border_color']) ?>aa;">นาย สมศักดิ์ รักกีฬา</span>
                 </div>
 
                 <!-- 5. Body Line 1 (House name details) -->
@@ -461,7 +528,9 @@ require_once __DIR__ . '/components/header.php';
     // Load initial layout sizes and coordinates into preview container
     window.addEventListener('DOMContentLoaded', () => {
         applyAllLayouts(layoutSettings);
+        changeFontStyle('<?= $settings['font_style'] ?>');
         applyTheme('<?= $settings['bg_style'] ?>', '<?= $settings['border_color'] ?>');
+        changeBgStyle('<?= $settings['bg_style'] ?>');
     });
 
     function applyAllLayouts(layout) {
@@ -519,6 +588,49 @@ require_once __DIR__ . '/components/header.php';
         }
     }
 
+    function changeFontStyle(fontName) {
+        const box = document.getElementById('preview-canvas-box');
+        if (!box) return;
+        
+        let family = "'Kanit', sans-serif";
+        switch (fontName) {
+            case 'Sarabun':
+                family = "'Sarabun', sans-serif";
+                break;
+            case 'Charm':
+                family = "'Charm', cursive";
+                break;
+            case 'Mali':
+                family = "'Mali', cursive";
+                break;
+            case 'Itim':
+                family = "'Itim', cursive";
+                break;
+            case 'Srisakdi':
+                family = "'Srisakdi', cursive";
+                break;
+            case 'Kanit':
+            default:
+                family = "'Kanit', sans-serif";
+                break;
+        }
+        box.style.fontFamily = family;
+        box.style.setProperty('--font-heading', family);
+        box.style.setProperty('--font-body', family);
+    }
+
+    function toggleLogosPreview(checked) {
+        const logoL = document.getElementById('preview-logo-left');
+        const logoR = document.getElementById('preview-logo-right');
+        if (checked) {
+            logoL.style.display = 'block';
+            logoR.style.display = 'block';
+        } else {
+            logoL.style.display = 'none';
+            logoR.style.display = 'none';
+        }
+    }
+
     function updatePreviewText(elementId, value) {
         const span = document.getElementById(elementId);
         if (span) span.innerText = value;
@@ -543,32 +655,41 @@ require_once __DIR__ . '/components/header.php';
         const box = document.getElementById('preview-canvas-box');
         const innerBorder = document.getElementById('preview-inner-border');
         const corners = document.querySelectorAll('.orn-corner');
-        const watermark = document.getElementById('preview-watermark');
+        const cornersInner = document.querySelectorAll('.orn-corner-inner');
         const colorInput = document.getElementById('border_color_input');
         
         box.className = "cert-preview-box";
         box.style.borderWidth = '20px';
         box.style.borderStyle = 'double';
         
+        // Hide inner corners on modern themes
+        cornersInner.forEach(c => c.style.display = 'block');
+        
         let newColor = '#d4af37';
         switch (style) {
             case 'emerald-premium':
                 box.classList.add('bg-[#fcfdfa]', 'text-slate-900');
+                box.style.borderStyle = 'double';
                 newColor = '#059669'; // emerald-600
+                cornersInner.forEach(c => c.style.display = 'none'); // modern single-angle corner
                 break;
             case 'royal-purple':
                 box.classList.add('bg-[#faf9fc]', 'text-slate-900');
+                box.style.borderStyle = 'double';
                 newColor = '#7e22ce'; // purple-700
+                cornersInner.forEach(c => c.style.display = 'none');
                 break;
             case 'minimal-blue':
                 box.classList.add('bg-[#fafcfe]', 'text-slate-900');
-                box.style.borderWidth = '16px';
+                box.style.borderWidth = '14px';
                 box.style.borderStyle = 'solid';
                 newColor = '#0284c7'; // sky-600
+                cornersInner.forEach(c => c.style.display = 'none');
                 break;
             case 'classic-gold':
             default:
                 box.classList.add('bg-white', 'text-slate-900');
+                box.style.borderStyle = 'double';
                 newColor = '#d4af37'; // gold
                 break;
         }
@@ -585,12 +706,18 @@ require_once __DIR__ . '/components/header.php';
         const box = document.getElementById('preview-canvas-box');
         const innerBorder = document.getElementById('preview-inner-border');
         const corners = document.querySelectorAll('.orn-corner');
-        const watermark = document.getElementById('preview-watermark');
+        const cornersInner = document.querySelectorAll('.orn-corner-inner');
+        const watermark = document.getElementById('preview-watermark-container');
+        const waveL = document.getElementById('bg-wave-left');
+        const waveR = document.getElementById('bg-wave-right');
 
         box.style.borderColor = color;
         if (innerBorder) innerBorder.style.borderColor = color + '55';
         corners.forEach(corner => corner.style.borderColor = color);
+        cornersInner.forEach(corner => corner.style.borderColor = color + '88');
         if (watermark) watermark.style.color = color;
+        if (waveL) waveL.style.color = color;
+        if (waveR) waveR.style.color = color;
     }
 
     function previewAwardChange(awardKey) {
