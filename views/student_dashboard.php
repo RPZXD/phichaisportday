@@ -592,7 +592,7 @@
                         tr.innerHTML = `
                             <td class="p-3.5">
                                 <strong class="block text-white text-xs sm:text-sm">${reg.student_name}</strong>
-                                <span class="text-[10px] text-slate-400">รหัส: ${reg.student_id}</span>
+                                <span class="text-[10px] text-slate-400">รหัส: ${reg.student_id} | ชั้น ม.${reg.grade_level}/${reg.room_number}</span>
                             </td>
                             <td class="p-3.5">
                                 <span class="badge house-badge text-[11px]">${houseNameTh}</span>
