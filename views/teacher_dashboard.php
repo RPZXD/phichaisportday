@@ -1685,10 +1685,11 @@
                 });
             })
             .catch(err => {
+                console.error("Error in showTeamAthletes:", err);
                 Swal.fire({
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถดึงข้อมูลรายชื่อนักกีฬาได้',
+                    text: 'ไม่สามารถดึงข้อมูลรายชื่อนักกีฬาได้: ' + err.message,
                     background: '#0f172a',
                     color: '#f1f5f9',
                     confirmButtonColor: '#6366f1'
@@ -1697,7 +1698,8 @@
     }
 
     function escapeHtml(text) {
-        return text
+        if (text === null || text === undefined) return '';
+        return String(text)
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
