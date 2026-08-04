@@ -112,6 +112,9 @@ class StudentController {
         // Get Top 1-3 results by sport for summary tab
         $topResultsBySport = $this->resultModel->getTopResultsBySport();
 
+        // Get Mail Merge Winners list for certificate export
+        $mailMergeWinners = $this->resultModel->getMailMergeWinners();
+
         // Get recent scheduled matches
         $matches = $this->matchModel->getAllMatches();
 

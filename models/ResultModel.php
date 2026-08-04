@@ -369,6 +369,109 @@ class ResultModel {
 
         return $list;
     }
+
+    /**
+     * Get winning student list for Mail Merge Certificate Export
+     * Columns: ลำดับ, ชื่อ-นามสกุล, รางวัล, ประเภทกีฬา, คณะสี
+     */
+    public function getMailMergeWinners() {
+        $stmt = $this->db_sports->query("
+            SELECT 
+                s.id as sport_id,
+                s.sport_name,
+                s.category,
+                r.medal,
+                r.points,
+                h.house_name,
+                er.student_id,
+                st.Stu_name,
+                st.Stu_sur
+            FROM results r
+            JOIN matches_events m ON r.match_id = m.id
+            JOIN sports s ON m.sport_id = s.id
+            JOIN houses h ON r.house_id = h.id
+            JOIN event_registrations er ON er.sport_id = s.id
+            JOIN phichaia_student.student st ON er.student_id = st.Stu_id
+            JOIN classroom_houses ch ON SUBSTRING(st.Stu_major, 1, 1) = ch.grade_level AND st.Stu_room = ch.room_number AND ch.house_id = r.house_id
+            WHERE r.medal IN ('Gold', 'Silver', 'Bronze') OR r.points IN (3, 2, 1)
+            ORDER BY s.id ASC, FIELD(r.medal, 'Gold', 'Silver', 'Bronze'), r.points DESC, st.Stu_id ASC
+        ");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $presenter = new SportPresenter();
+        $formatted = [];
+        $index = 1;
+
+        foreach ($rows as $row) {
+            $medalTh = '-';
+            if ($row['medal'] === 'Gold' || $row['points'] == 3) {
+                $medalTh = 'รางวัลชนะเลิศ (เหรียญทอง)';
+            } elseif ($row['medal'] === 'Silver' || $row['points'] == 2) {
+                $medalTh = 'รางวัลรองชนะเลิศ อันดับ 1 (เหรียญเงิน)';
+            } elseif ($row['medal'] === 'Bronze' || $row['points'] == 1) {
+                $medalTh = 'รางวัลรองชนะเลิศ อันดับ 2 (เหรียญทองแดง)';
+            }
+
+            $formatted[] = [
+                'index' => $index++,
+                'fullname' => trim($row['Stu_name'] . ' ' . $row['Stu_sur']),
+                'award' => $medalTh,
+                'sport_name' => $row['sport_name'],
+                'house_name' => $presenter->getHouseNameTh($row['house_name'])
+            ];
+        }
+
+        // Sort formatted list by sport order preference
+        usort($formatted, function($a, $b) {
+            $getSortKey = function($sportName) {
+                $name = trim($sportName);
+                $subScore = 99;
+                if (mb_strpos($name, 'ม.ต้น') !== false && (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false)) {
+                    $subScore = 1;
+                } elseif (mb_strpos($name, 'ม.ต้น') !== false && (mb_strpos($name, 'ชาย') !== false || mb_strpos($name, 'ช') !== false)) {
+                    $subScore = 2;
+                } elseif (mb_strpos($name, 'ม.ปลาย') !== false && (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false)) {
+                    $subScore = 3;
+                } elseif (mb_strpos($name, 'ม.ปลาย') !== false && (mb_strpos($name, 'ชาย') !== false || mb_strpos($name, 'ช') !== false)) {
+                    $subScore = 4;
+                } elseif (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false) {
+                    $subScore = 1;
+                }
+
+                if (mb_strpos($name, 'วอลเลย์บอล') !== false) return [1, 0, $subScore];
+                if (mb_strpos($name, 'ตะกร้อ') !== false) return [2, 0, $subScore];
+                if (mb_strpos($name, 'เปตอง') !== false) return [3, 0, $subScore];
+                if (mb_strpos($name, 'วู้ดบอล') !== false) {
+                    $typeScore = (mb_strpos($name, 'คู่') !== false) ? 2 : 1;
+                    return [4, $typeScore, $subScore];
+                }
+                if (mb_strpos($name, 'ฟุตบอล') !== false) return [5, 0, $subScore];
+                if (mb_strpos($name, 'บาสเกตบอล') !== false) return [6, 0, $subScore];
+                if (mb_strpos($name, 'เทเบิลเทนนิส') !== false) return [7, 0, $subScore];
+
+                return [8, 0, $subScore];
+            };
+
+            $keyA = $getSortKey($a['sport_name']);
+            $keyB = $getSortKey($b['sport_name']);
+
+            if ($keyA[0] !== $keyB[0]) return $keyA[0] <=> $keyB[0];
+            if ($keyA[1] !== $keyB[1]) return $keyA[1] <=> $keyB[1];
+            if ($keyA[2] !== $keyB[2]) return $keyA[2] <=> $keyB[2];
+
+            return $a['index'] <=> $b['index'];
+        });
+
+        // Re-index sequentially from 1 to N after sorting
+        $seq = 1;
+        foreach ($formatted as &$f) {
+            $f['index'] = $seq++;
+        }
+        unset($f);
+
+        return $formatted;
+    }
 }
+
 
 

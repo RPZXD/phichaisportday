@@ -132,6 +132,9 @@ class TeacherController {
         // Get Top 1-3 results by sport for summary tab
         $topResultsBySport = $this->resultModel->getTopResultsBySport();
 
+        // Get Mail Merge Winners list for certificate export
+        $mailMergeWinners = $this->resultModel->getMailMergeWinners();
+
         // Get single elimination tournament brackets
         $selected_sport_id = filter_input(INPUT_GET, 'bracket_sport_id', FILTER_VALIDATE_INT);
         if (!$selected_sport_id && !empty($sports)) {

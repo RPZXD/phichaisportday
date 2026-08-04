@@ -749,10 +749,16 @@
                         <p class="text-xs text-slate-400 mt-1">แสดงรายชื่อคณะสีที่ได้รับรางวัลอันดับที่ 1, 2 และ 3 ของทุกประเภทกีฬา พร้อมปุ่มส่งออก Excel</p>
                     </div>
 
-                    <button type="button" onclick="exportTopWinnersExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg select-none shrink-0 transition-all">
-                        <i class="fa-solid fa-file-excel text-base"></i>
-                        ส่งออกไฟล์ Excel (.csv)
-                    </button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="exportMailMergeExcel()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg select-none shrink-0 transition-all">
+                            <i class="fa-solid fa-envelope-open-text text-base"></i>
+                            Export Mail Merge เกียรติบัตร (1-3)
+                        </button>
+                        <button type="button" onclick="exportTopWinnersExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg select-none shrink-0 transition-all">
+                            <i class="fa-solid fa-file-excel text-base"></i>
+                            ส่งออกตารางภาพรวม (.csv)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto w-full rounded-xl border border-white/5">
@@ -1772,6 +1778,44 @@
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
         link.setAttribute("download", `สรุปผลการแข่งขัน_ลำดับ1-3_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function exportMailMergeExcel() {
+        const mailMergeData = <?php echo json_encode($mailMergeWinners ?? []); ?>;
+        
+        if (!mailMergeData || mailMergeData.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ไม่มีข้อมูล',
+                text: 'ยังไม่มีข้อมูลนักเรียนที่ได้รับรางวัลอันดับ 1-3 สำหรับทำ Mail Merge',
+                background: '#0f172a',
+                color: '#f1f5f9',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        let csvContent = "\uFEFF"; // UTF-8 BOM for Excel compatibility
+        csvContent += "ลำดับ,ชื่อ-นามสกุล,รางวัล,ประเภทกีฬา,คณะสี\n";
+
+        mailMergeData.forEach(item => {
+            const index = item.index;
+            const name = item.fullname.replace(/"/g, '""');
+            const award = item.award.replace(/"/g, '""');
+            const sport = item.sport_name.replace(/"/g, '""');
+            const house = item.house_name.replace(/"/g, '""');
+            csvContent += `"${index}","${name}","${award}","${sport}","${house}"\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `MailMerge_เกียรติบัตร_อันดับ1-3_${new Date().toISOString().slice(0,10)}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
