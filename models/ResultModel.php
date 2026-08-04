@@ -250,4 +250,125 @@ class ResultModel {
         }
         return $medals;
     }
+
+    /**
+     * Get Top 1-3 results for each sport event grouped and ordered by sport categories:
+     * 1. Volleyball (วอลเลย์บอล: ม.ต้น ญ, ม.ต้น ช, ม.ปลาย ญ, ม.ปลาย ช)
+     * 2. Takraw (ตะกร้อ/เซปักตะกร้อ: ม.ต้น ญ, ม.ต้น ช, ม.ปลาย ญ, ม.ปลาย ช)
+     * 3. Petanque (เปตอง: ม.ต้น ญ, ม.ต้น ช, ม.ปลาย ญ, ม.ปลาย ช)
+     * 4. Woodball (วู้ดบอล: เดี่ยว (ม.ต้น ญ, ม.ต้น ช, ม.ปลาย ญ, ม.ปลาย ช), คู่ (ม.ต้น ญ, ม.ต้น ช, ม.ปลาย ญ, ม.ปลาย ช))
+     * 5. Football 7-a-side (ฟุตบอล 7 คน: ญ. รวม, ม.ต้น ช, ม.ปลาย ช)
+     * 6. Basketball (บาสเกตบอล: ญ. รวม, ม.ต้น ช, ม.ปลาย ช)
+     * 7. Table Tennis (เทเบิลเทนนิส: ม.ต้น ญ, ม.ต้น ช, ม.ปลาย ญ, ม.ปลาย ช)
+     * 8. Others (E-Sport, etc.)
+     */
+    public function getTopResultsBySport() {
+        $stmt = $this->db_sports->query("
+            SELECT 
+                s.id as sport_id,
+                s.sport_name,
+                s.category,
+                r.medal,
+                r.points,
+                h.id as house_id,
+                h.house_name,
+                h.color_code
+            FROM sports s
+            JOIN matches_events m ON s.id = m.sport_id
+            JOIN results r ON m.id = r.match_id
+            JOIN houses h ON r.house_id = h.id
+            WHERE r.medal IN ('Gold', 'Silver', 'Bronze')
+               OR r.points IN (3, 2, 1)
+            ORDER BY s.id ASC, 
+                     FIELD(r.medal, 'Gold', 'Silver', 'Bronze'), 
+                     r.points DESC
+        ");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $resultsBySport = [];
+        foreach ($rows as $row) {
+            $sport_id = $row['sport_id'];
+            if (!isset($resultsBySport[$sport_id])) {
+                $resultsBySport[$sport_id] = [
+                    'sport_id' => $sport_id,
+                    'sport_name' => $row['sport_name'],
+                    'category' => $row['category'],
+                    'top_results' => []
+                ];
+            }
+            $resultsBySport[$sport_id]['top_results'][] = $row;
+        }
+
+        $list = array_values($resultsBySport);
+
+        // Sorting helper based on specified group order and sub-categories
+        usort($list, function($a, $b) {
+            $getSortKey = function($sportName) {
+                $name = trim($sportName);
+
+                // Helper to score sub-category order: ม.ต้น ญ (1) -> ม.ต้น ช (2) -> ม.ปลาย ญ (3) -> ม.ปลาย ช (4) / ญ รวม (1)
+                $subScore = 99;
+                if (mb_strpos($name, 'ม.ต้น') !== false && (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false)) {
+                    $subScore = 1;
+                } elseif (mb_strpos($name, 'ม.ต้น') !== false && (mb_strpos($name, 'ชาย') !== false || mb_strpos($name, 'ช') !== false)) {
+                    $subScore = 2;
+                } elseif (mb_strpos($name, 'ม.ปลาย') !== false && (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false)) {
+                    $subScore = 3;
+                } elseif (mb_strpos($name, 'ม.ปลาย') !== false && (mb_strpos($name, 'ชาย') !== false || mb_strpos($name, 'ช') !== false)) {
+                    $subScore = 4;
+                } elseif (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false) {
+                    $subScore = 1;
+                }
+
+                // 1. วอลเลย์บอล
+                if (mb_strpos($name, 'วอลเลย์บอล') !== false) {
+                    return [1, 0, $subScore];
+                }
+                // 2. ตะกร้อ / เซปักตะกร้อ
+                if (mb_strpos($name, 'ตะกร้อ') !== false) {
+                    return [2, 0, $subScore];
+                }
+                // 3. เปตอง
+                if (mb_strpos($name, 'เปตอง') !== false) {
+                    return [3, 0, $subScore];
+                }
+                // 4. วู้ดบอล
+                if (mb_strpos($name, 'วู้ดบอล') !== false) {
+                    $typeScore = 1; // เดี่ยว
+                    if (mb_strpos($name, 'คู่') !== false) {
+                        $typeScore = 2; // คู่
+                    }
+                    return [4, $typeScore, $subScore];
+                }
+                // 5. ฟุตบอล 7 คน
+                if (mb_strpos($name, 'ฟุตบอล') !== false) {
+                    return [5, 0, $subScore];
+                }
+                // 6. บาสเกตบอล
+                if (mb_strpos($name, 'บาสเกตบอล') !== false) {
+                    return [6, 0, $subScore];
+                }
+                // 7. เทเบิลเทนนิส
+                if (mb_strpos($name, 'เทเบิลเทนนิส') !== false) {
+                    return [7, 0, $subScore];
+                }
+
+                // 8. อื่นๆ (E-Sport ฯลฯ)
+                return [8, 0, $subScore];
+            };
+
+            $keyA = $getSortKey($a['sport_name']);
+            $keyB = $getSortKey($b['sport_name']);
+
+            if ($keyA[0] !== $keyB[0]) return $keyA[0] <=> $keyB[0];
+            if ($keyA[1] !== $keyB[1]) return $keyA[1] <=> $keyB[1];
+            if ($keyA[2] !== $keyB[2]) return $keyA[2] <=> $keyB[2];
+
+            return strcmp($a['sport_name'], $b['sport_name']);
+        });
+
+        return $list;
+    }
 }
+
+

@@ -451,6 +451,62 @@
                 </div>
             </div>
 
+            <!-- Top 1-3 Winners Summary Card -->
+            <div class="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-[24px] p-6 shadow-lg">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2 font-heading">
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                        ผลการแข่งขัน ลำดับที่ 1-3
+                    </h3>
+                    <button type="button" onclick="exportStudentTopWinnersExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-md select-none shrink-0 transition-all">
+                        <i class="fa-solid fa-file-excel"></i>
+                        ส่งออก Excel
+                    </button>
+                </div>
+                
+                <div class="max-h-[350px] overflow-y-auto pr-1 flex flex-col gap-3 scrollbar-thin scrollbar-thumb-white/10">
+                    <?php if (empty($topResultsBySport)): ?>
+                        <p class="text-slate-500 text-xs text-center py-6 font-semibold">ยังไม่มีข้อมูลผลการแข่งขันลำดับ 1-3</p>
+                    <?php else: ?>
+                        <?php foreach ($topResultsBySport as $sRes): ?>
+                            <div class="bg-slate-800/40 border border-white/5 rounded-xl p-3.5 hover:border-white/10 transition-all">
+                                <div class="flex justify-between items-center mb-2 pb-2 border-b border-white/5">
+                                    <strong class="text-sm text-white font-bold truncate"><?= htmlspecialchars($sRes['sport_name']) ?></strong>
+                                    <span class="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded-full whitespace-nowrap"><?= htmlspecialchars($sRes['category']) ?></span>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                    <?php 
+                                        $gH = '-'; $sH = '-'; $bH = '-';
+                                        foreach ($sRes['top_results'] as $res) {
+                                            $hName = $presenter->getHouseNameTh($res['house_name']);
+                                            if ($res['medal'] === 'Gold' || $res['points'] == 3) {
+                                                $gH = '<span class="font-bold text-amber-300" style="color:' . htmlspecialchars($res['color_code']) . '">🥇 ' . htmlspecialchars($hName) . '</span>';
+                                            } elseif ($res['medal'] === 'Silver' || $res['points'] == 2) {
+                                                $sH = '<span class="font-bold text-slate-200" style="color:' . htmlspecialchars($res['color_code']) . '">🥈 ' . htmlspecialchars($hName) . '</span>';
+                                            } elseif ($res['medal'] === 'Bronze' || $res['points'] == 1) {
+                                                $bH = '<span class="font-bold text-amber-500" style="color:' . htmlspecialchars($res['color_code']) . '">🥉 ' . htmlspecialchars($hName) . '</span>';
+                                            }
+                                        }
+                                    ?>
+                                    <div class="bg-amber-400/5 p-2 rounded-lg border border-amber-400/10">
+                                        <div class="text-[10px] text-amber-400 font-bold mb-0.5">อันดับ 1 (ทอง)</div>
+                                        <div><?= $gH ?></div>
+                                    </div>
+                                    <div class="bg-slate-300/5 p-2 rounded-lg border border-slate-300/10">
+                                        <div class="text-[10px] text-slate-300 font-bold mb-0.5">อันดับ 2 (เงิน)</div>
+                                        <div><?= $sH ?></div>
+                                    </div>
+                                    <div class="bg-amber-700/5 p-2 rounded-lg border border-amber-700/10">
+                                        <div class="text-[10px] text-amber-600 font-bold mb-0.5">อันดับ 3 (ทองแดง)</div>
+                                        <div><?= $bH ?></div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Schedule Card -->
             <div class="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-[24px] p-6 shadow-lg">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
@@ -824,6 +880,73 @@ function swalConfirm(formId, title, text) {
             document.getElementById(formId).submit();
         }
     });
+}
+</script>
+
+<script>
+function exportStudentTopWinnersExcel() {
+    const topData = <?php echo json_encode($topResultsBySport ?? []); ?>;
+    
+    if (!topData || topData.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'ไม่มีข้อมูล',
+            text: 'ยังไม่มีข้อมูลผลการแข่งขันที่บันทึกรางวัลสำหรับส่งออก',
+            background: '#0d1022',
+            color: '#f1f5f9',
+            confirmButtonColor: '#6366f1'
+        });
+        return;
+    }
+
+    let csvContent = "\uFEFF"; // UTF-8 BOM for Excel compatibility
+    csvContent += "ประเภทกีฬา,หมวดหมู่,อันดับ 1 (เหรียญทอง),อันดับ 2 (เหรียญเงิน),อันดับ 3 (เหรียญทองแดง)\n";
+
+    const getHouseTh = (name) => {
+        if (!name) return '';
+        if (name.includes('purple') || name.includes('ม่วง')) return 'สีม่วง';
+        if (name.includes('green') || name.includes('เขียว')) return 'สีเขียว';
+        if (name.includes('orange') || name.includes('แสด') || name.includes('ส้ม')) return 'สีแสด';
+        if (name.includes('light blue') || name.includes('sky') || name.includes('ฟ้า')) return 'สีฟ้า';
+        if (name.includes('blue') || name.includes('น้ำเงิน')) return 'สีน้ำเงิน';
+        if (name.includes('pink') || name.includes('ชมพู')) return 'สีชมพู';
+        if (name.includes('red') || name.includes('แดง')) return 'สีแดง';
+        if (name.includes('yellow') || name.includes('เหลือง')) return 'สีเหลือง';
+        return name;
+    };
+
+    topData.forEach(item => {
+        let gold = "-";
+        let silver = "-";
+        let bronze = "-";
+
+        if (item.top_results && Array.isArray(item.top_results)) {
+            item.top_results.forEach(res => {
+                const hName = getHouseTh(res.house_name);
+                if (res.medal === 'Gold' || res.points == 3) {
+                    gold = hName;
+                } else if (res.medal === 'Silver' || res.points == 2) {
+                    silver = hName;
+                } else if (res.medal === 'Bronze' || res.points == 1) {
+                    bronze = hName;
+                }
+            });
+        }
+
+        const sportName = item.sport_name.replace(/"/g, '""');
+        const category = item.category.replace(/"/g, '""');
+        csvContent += `"${sportName}","${category}","${gold}","${silver}","${bronze}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `สรุปผลการแข่งขัน_ลำดับ1-3_${new Date().toISOString().slice(0,10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 </script>
 

@@ -109,6 +109,9 @@ class StudentController {
         // Leaderboard standings
         $leaderboard = $this->resultModel->getLeaderboard();
 
+        // Get Top 1-3 results by sport for summary tab
+        $topResultsBySport = $this->resultModel->getTopResultsBySport();
+
         // Get recent scheduled matches
         $matches = $this->matchModel->getAllMatches();
 

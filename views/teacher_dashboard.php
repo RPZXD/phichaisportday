@@ -159,6 +159,10 @@
             <i class="fa-solid fa-ranking-star text-[#d4af37]"></i>
             ตารางสรุปคะแนน
         </button>
+        <button class="tab-btn" onclick="switchTab('top-winners-tab')">
+            <i class="fa-solid fa-trophy text-amber-400"></i>
+            ผลการแข่งขัน 1-3
+        </button>
         <button class="tab-btn" onclick="switchTab('bracket-tab')">
             <i class="fa-solid fa-diagram-project text-teal-400"></i>
             สายการแข่งขัน (Bracket)
@@ -729,6 +733,74 @@
                             endforeach; 
                         ?>
                     <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4.5: Top Winners (ลำดับ 1-3) -->
+        <div id="top-winners-tab" class="tab-pane">
+            <div class="bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-[24px] p-6 md:p-8 shadow-lg">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold flex items-center gap-2 text-white font-heading">
+                            <i class="fa-solid fa-trophy text-amber-400"></i>
+                            สรุปผลการแข่งขัน ลำดับที่ 1-3 ของแต่ละรายการ
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">แสดงรายชื่อคณะสีที่ได้รับรางวัลอันดับที่ 1, 2 และ 3 ของทุกประเภทกีฬา พร้อมปุ่มส่งออก Excel</p>
+                    </div>
+
+                    <button type="button" onclick="exportTopWinnersExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-lg select-none shrink-0 transition-all">
+                        <i class="fa-solid fa-file-excel text-base"></i>
+                        ส่งออกไฟล์ Excel (.csv)
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto w-full rounded-xl border border-white/5">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-white/2 border-b border-white/5 text-slate-400 font-bold text-xs uppercase tracking-wider">
+                                <th class="p-3.5">ประเภทกีฬา / หมวดหมู่</th>
+                                <th class="p-3.5 text-amber-400"><i class="fa-solid fa-medal mr-1"></i>อันดับ 1 (เหรียญทอง)</th>
+                                <th class="p-3.5 text-slate-300"><i class="fa-solid fa-medal mr-1"></i>อันดับ 2 (เหรียญเงิน)</th>
+                                <th class="p-3.5 text-amber-600"><i class="fa-solid fa-medal mr-1"></i>อันดับ 3 (เหรียญทองแดง)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($topResultsBySport)): ?>
+                                <tr>
+                                    <td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีข้อมูลผลการแข่งขันที่บันทึกรางวัลลำดับ 1-3</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($topResultsBySport as $sportItem): ?>
+                                    <?php 
+                                        $goldHouse = '-';
+                                        $silverHouse = '-';
+                                        $bronzeHouse = '-';
+
+                                        foreach ($sportItem['top_results'] as $res) {
+                                            $hName = $presenter->getHouseNameTh($res['house_name']);
+                                            if ($res['medal'] === 'Gold' || $res['points'] == 3) {
+                                                $goldHouse = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-400/10 text-amber-300 border border-amber-400/20" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-crown text-amber-400"></i> ' . htmlspecialchars($hName) . '</span>';
+                                            } elseif ($res['medal'] === 'Silver' || $res['points'] == 2) {
+                                                $silverHouse = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-300/10 text-slate-200 border border-slate-300/20" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-medal text-slate-300"></i> ' . htmlspecialchars($hName) . '</span>';
+                                            } elseif ($res['medal'] === 'Bronze' || $res['points'] == 1) {
+                                                $bronzeHouse = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-700/10 text-amber-500 border border-amber-700/20" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-medal text-amber-600"></i> ' . htmlspecialchars($hName) . '</span>';
+                                            }
+                                        }
+                                    ?>
+                                    <tr class="border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors">
+                                        <td class="p-3.5">
+                                            <strong class="block text-white text-sm"><?= htmlspecialchars($sportItem['sport_name']) ?></strong>
+                                            <span class="text-xs text-slate-400">หมวดหมู่: <?= htmlspecialchars($sportItem['category']) ?></span>
+                                        </td>
+                                        <td class="p-3.5"><?= $goldHouse ?></td>
+                                        <td class="p-3.5"><?= $silverHouse ?></td>
+                                        <td class="p-3.5"><?= $bronzeHouse ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -1648,6 +1720,58 @@
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
         link.setAttribute("download", `รายชื่อนักกีฬา_${sportName.trim().replace(/\s+/g, '_')}${houseSuffix}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function exportTopWinnersExcel() {
+        const topData = <?php echo json_encode($topResultsBySport ?? []); ?>;
+        
+        if (!topData || topData.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ไม่มีข้อมูล',
+                text: 'ยังไม่มีข้อมูลผลการแข่งขันที่บันทึกรางวัลสำหรับส่งออก',
+                background: '#0f172a',
+                color: '#f1f5f9',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        let csvContent = "\uFEFF"; // UTF-8 BOM for Excel compatibility
+        csvContent += "ประเภทกีฬา,หมวดหมู่,อันดับ 1 (เหรียญทอง),อันดับ 2 (เหรียญเงิน),อันดับ 3 (เหรียญทองแดง)\n";
+
+        topData.forEach(item => {
+            let gold = "-";
+            let silver = "-";
+            let bronze = "-";
+
+            if (item.top_results && Array.isArray(item.top_results)) {
+                item.top_results.forEach(res => {
+                    const hName = getHouseNameTh(res.house_name);
+                    if (res.medal === 'Gold' || res.points == 3) {
+                        gold = hName;
+                    } else if (res.medal === 'Silver' || res.points == 2) {
+                        silver = hName;
+                    } else if (res.medal === 'Bronze' || res.points == 1) {
+                        bronze = hName;
+                    }
+                });
+            }
+
+            const sportName = item.sport_name.replace(/"/g, '""');
+            const category = item.category.replace(/"/g, '""');
+            csvContent += `"${sportName}","${category}","${gold}","${silver}","${bronze}"\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `สรุปผลการแข่งขัน_ลำดับ1-3_${new Date().toISOString().slice(0,10)}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
