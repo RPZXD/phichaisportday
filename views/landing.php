@@ -179,13 +179,70 @@
         }
     </style>
 </head>
-<body class="text-slate-100 font-body min-h-screen relative overflow-x-hidden">
+<body class="text-slate-100 font-body min-h-screen relative overflow-x-hidden bg-slate-950 pb-20 md:pb-0">
 
 <?php include __DIR__ . '/components/ambient_orbs.php'; ?>
 <?php include __DIR__ . '/components/header.php'; ?>
 
+<!-- ========================================== -->
+<!-- MOBILE DRAWER MENU (SLIDE-OUT OVERLAY)     -->
+<!-- ========================================== -->
+<div id="drawer-backdrop" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
+<aside id="drawer-menu" class="fixed top-0 right-0 z-50 h-full w-80 bg-slate-900 border-l border-slate-800 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 ease-out overflow-y-auto">
+  <div class="flex items-center justify-between pb-6 border-b border-slate-800">
+    <h2 class="font-heading text-xl font-bold text-white flex items-center gap-2">
+      <span class="w-2 h-6 bg-red-500 rounded-full"></span> เมนูหลัก (Menu)
+    </h2>
+    <button id="drawer-close" class="p-2 text-slate-400 hover:text-white bg-slate-800 rounded-lg cursor-pointer">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+  </div>
+
+  <!-- Quick Navigation Links -->
+  <nav class="mt-6 space-y-2">
+    <a href="#hero" class="flex items-center gap-3 px-4 py-3 text-slate-200 hover:bg-slate-800 rounded-xl font-medium transition">
+      <i class="fa-solid fa-house text-red-400"></i> หน้าแรก (Home)
+    </a>
+    <a href="#leaderboard" class="flex items-center gap-3 px-4 py-3 text-slate-200 hover:bg-slate-800 rounded-xl font-medium transition">
+      <i class="fa-solid fa-trophy text-amber-400"></i> ตารางคะแนนรวม (Scoreboard)
+    </a>
+    <a href="#schedule-live" class="flex items-center gap-3 px-4 py-3 text-slate-200 hover:bg-slate-800 rounded-xl font-medium transition">
+      <i class="fa-solid fa-calendar-day text-blue-400"></i> ตารางแข่งขันสด (Schedule)
+    </a>
+    <a href="#houses" class="flex items-center gap-3 px-4 py-3 text-slate-200 hover:bg-slate-800 rounded-xl font-medium transition">
+      <i class="fa-solid fa-flag text-emerald-400"></i> คณะสีทั้งหมด (House Teams)
+    </a>
+    <a href="#brackets" class="flex items-center gap-3 px-4 py-3 text-slate-200 hover:bg-slate-800 rounded-xl font-medium transition">
+      <i class="fa-solid fa-sitemap text-purple-400"></i> สายการแข่งขัน (Brackets)
+    </a>
+    <a href="#results" class="flex items-center gap-3 px-4 py-3 text-slate-200 hover:bg-slate-800 rounded-xl font-medium transition">
+      <i class="fa-solid fa-square-poll-vertical text-emerald-400"></i> ผลการแข่งขันล่าสุด (Results)
+    </a>
+  </nav>
+
+
+  <!-- House Quick Filter Pills -->
+  <div class="mt-8 pt-6 border-t border-slate-800">
+    <p class="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-3">เลือกลัดคณะสี (Select House)</p>
+    <div class="grid grid-cols-2 gap-2">
+      <a href="#houses" class="flex items-center gap-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/20 transition">
+        <span class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></span> คณะสีแดง
+      </a>
+      <a href="#houses" class="flex items-center gap-2 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold hover:bg-blue-500/20 transition">
+        <span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></span> คณะสีน้ำเงิน
+      </a>
+      <a href="#houses" class="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition">
+        <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span> คณะสีเขียว
+      </a>
+      <a href="#houses" class="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold hover:bg-amber-500/20 transition">
+        <span class="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></span> คณะสีเหลือง
+      </a>
+    </div>
+  </div>
+</aside>
+
 <!-- Hero Section -->
-<div class="max-w-6xl mx-auto text-center px-4 py-12 md:py-20 relative z-10 select-none overflow-hidden rounded-[40px]">
+<div id="hero" class="max-w-6xl mx-auto text-center px-4 py-8 md:py-16 relative z-10 select-none overflow-hidden rounded-[40px]">
     
     <div class="hero-gradient-glow"></div>
     
@@ -198,10 +255,10 @@
         <div class="absolute bottom-[-10px] left-[55%] w-2 h-2 bg-gradient-to-tr from-amber-400 to-yellow-200 rounded-full blur-[1px] shadow-[0_0_8px_#fbbf24] opacity-0 animate-[floatUp_4.5s_infinite_ease-in-out_2.5s]"></div>
     </div>
     
-    <div id="hero-centerpiece-container" class="relative w-full h-[480px] sm:h-[550px] md:h-[680px] mx-auto mb-4 flex items-center justify-center select-none overflow-visible animate-hero-fade-in-up delay-100 animate-float style-football z-0">
+    <div id="hero-centerpiece-container" class="relative w-full h-[380px] sm:h-[480px] md:h-[620px] mx-auto mb-2 flex items-center justify-center select-none overflow-visible animate-hero-fade-in-up delay-100 animate-float style-football z-0">
         <canvas id="hero-particles-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
 
-        <div class="absolute w-[400px] h-[400px] md:w-[650px] md:h-[650px] rounded-full blur-[90px] md:blur-[130px] animate-pulse radial-glow-back opacity-65"></div>
+        <div class="absolute w-[320px] h-[320px] md:w-[650px] md:h-[650px] rounded-full blur-[90px] md:blur-[130px] animate-pulse radial-glow-back opacity-65"></div>
 
         <div class="absolute inset-0 rounded-full border border-dashed border-teal-500/10 animate-[spin_50s_linear_infinite]"></div>
         <div class="absolute inset-6 rounded-full border border-dashed border-amber-500/15 animate-[spin_35s_linear_infinite_reverse]"></div>
@@ -211,10 +268,10 @@
         <div class="absolute inset-24 rounded-full border-2 animate-[spin_7s_linear_infinite_reverse] filter blur-[1px] ring-glow-2"></div>
         <div class="absolute inset-28 rounded-full border animate-[spin_3s_linear_infinite] filter blur-[0.5px] ring-glow-3"></div>
 
-        <div class="relative z-10 w-80 h-80 md:w-[420px] md:h-[420px] flex flex-col items-center justify-center group hover:scale-105 transition-all duration-700 ease-out central-emblem-box">
+        <div class="relative z-10 w-64 h-64 md:w-[420px] md:h-[420px] flex flex-col items-center justify-center group hover:scale-105 transition-all duration-700 ease-out central-emblem-box">
 
             <div class="relative flex flex-col items-center justify-center select-none text-center p-2 w-full h-full">
-                <div class="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center overflow-visible">
+                <div class="relative w-48 h-48 md:w-80 md:h-80 flex items-center justify-center overflow-visible">
                     
                     <div id="svg-hero-football" class="style-switch-item active w-full h-full">
                         <svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow-[0_0_25px_rgba(20,184,166,0.8)] group-hover:scale-105 transition-transform duration-500">
@@ -240,10 +297,11 @@
                     </div>
                     
                 </div>
-                <span class="text-base md:text-lg font-black tracking-[0.4em] text-white/95 uppercase font-heading mt-6 bg-gradient-to-r bg-clip-text text-transparent filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] wordmark-text">Phichai Game 2026</span>
+                <span class="text-sm md:text-lg font-black tracking-[0.4em] text-white/95 uppercase font-heading mt-4 bg-gradient-to-r bg-clip-text text-transparent filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] wordmark-text">Phichai Game 2026</span>
             </div>
         </div>
     </div>
+
 
     <!-- Hero Style Switcher Panel -->
 
@@ -936,55 +994,268 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-<!-- Results Section (ผลการแข่งขันล่าสุด) -->
-<section id="results" class="py-20 max-w-4xl mx-auto px-4 border-t border-white/5 relative z-10">
-    <div class="text-center mb-16">
-        <span class="text-xs uppercase tracking-widest text-yellow-500 font-bold block mb-2">Results</span>
-        <h2 class="text-3xl md:text-4xl font-black font-heading text-white">ผลการแข่งขันล่าสุด</h2>
-        <p class="text-slate-400 text-sm mt-1">สรุปข้อมูลเหรียญรางวัลและผลคะแนนการแข่งขันที่เสร็จสิ้นสมบูรณ์</p>
+
+<!-- Interactive Match Schedule Timeline Section -->
+<section id="schedule-live" class="py-16 max-w-5xl mx-auto px-4 border-t border-white/5 relative z-10">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-8">
+        <div>
+            <span class="text-xs uppercase tracking-widest text-blue-400 font-bold block mb-1">Live Match Timeline</span>
+            <h2 class="text-2xl md:text-3xl font-black font-heading text-white flex items-center gap-2">
+                <span class="w-2.5 h-6 bg-blue-500 rounded-full"></span>
+                ตารางแข่งขันสดและผลคะแนนตามเวลาจริง
+            </h2>
+            <p class="text-slate-400 text-xs mt-0.5">รายงานสดติดขอบสนามพร้อมสถานะการแข่งขัน</p>
+        </div>
     </div>
-    
-    <div class="flex flex-col gap-4">
-        <?php
-        $completedMatches = array_filter($matches, function($m) {
-            return $m['status'] === 'Completed';
-        });
-        if (empty($completedMatches)): ?>
-            <div class="glass-panel border border-white/5 rounded-2xl p-10 text-center text-slate-500 font-semibold">
-                <i class="fa-solid fa-award text-3xl mb-3 block text-yellow-500/30"></i>
-                ยังไม่มีรายการแข่งขันใดที่เสร็จสิ้นสมบูรณ์ในระบบ
-            </div>
-        <?php else: ?>
-            <?php foreach ($completedMatches as $match): ?>
-                <?php include __DIR__ . '/components/match_card.php'; ?>
+
+    <!-- High-level Grouping by Main Sport Category (Completed & Live Scored Only) -->
+    <?php
+    $mainCategories = [];
+    $totalCompletedMatches = 0;
+    if (!empty($matches)) {
+        foreach ($matches as $m) {
+            // Only include matches that have status Completed or Live (or have recorded results/winner)
+            $mId = $m['id'];
+            $hasResults = isset($matchResults[$mId]) && !empty($matchResults[$mId]);
+            $isScored = ($m['status'] === 'Completed' || $m['status'] === 'Live' || $hasResults || $m['winner_house_id'] !== null);
+            
+            if ($isScored) {
+                $totalCompletedMatches++;
+                $fullSportName = trim($m['sport_name']);
+                $mainCat = explode(' ', $fullSportName)[0];
+                
+                if (!isset($mainCategories[$mainCat])) {
+                    $mainCategories[$mainCat] = [
+                        'title' => $mainCat,
+                        'matches' => []
+                    ];
+                }
+                $mainCategories[$mainCat]['matches'][] = $m;
+            }
+        }
+    }
+    ?>
+
+    <!-- Minimal Category Filter Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 pt-1 select-none border-b border-slate-800/80 mb-6">
+        <button onclick="filterScheduleGroup('all')" id="schedule-tab-all" class="schedule-tab-btn px-4 py-1.5 rounded-full bg-blue-600 text-white font-bold text-xs whitespace-nowrap shadow-sm cursor-pointer transition">
+            ทั้งหมด (<?= $totalCompletedMatches ?> ผลการแข่ง)
+        </button>
+        <?php if (!empty($mainCategories)): ?>
+            <?php foreach ($mainCategories as $catName => $group): ?>
+                <?php $catHash = md5($catName); ?>
+                <button onclick="filterScheduleGroup('<?= $catHash ?>')" id="schedule-tab-<?= $catHash ?>" class="schedule-tab-btn px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 font-medium text-xs whitespace-nowrap cursor-pointer transition">
+                    <?= htmlspecialchars($catName) ?> (<?= count($group['matches']) ?>)
+                </button>
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
-</section>
 
-<!-- Sports Section (ชนิดกีฬาที่จัดแข่ง) -->
-<section id="sports" class="py-20 max-w-5xl mx-auto px-4 border-t border-white/5 mb-16 relative z-10">
-    <div class="text-center mb-16">
-        <span class="text-xs uppercase tracking-widest text-purple-400 font-bold block mb-2">Sports</span>
-        <h2 class="text-3xl md:text-4xl font-black font-heading text-white">ชนิดกีฬาที่จัดแข่ง</h2>
-        <p class="text-slate-400 text-sm mt-1">รายการกีฬาประเภทต่าง ๆ ที่ลงทะเบียนแข่งและมีการแข่งขันในกีฬาสีปีนี้</p>
-    </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <?php if (empty($sports)): ?>
-            <div class="col-span-full bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-2xl p-8 text-center text-slate-500 font-semibold">
-                <i class="fa-solid fa-running text-2xl mb-2 block text-purple-400/50"></i>
-                ยังไม่มีข้อมูลชนิดกีฬาลงทะเบียนในระบบ
-            </div>
-        <?php else: ?>
-            <?php foreach ($sports as $sport): ?>
-                <?php include __DIR__ . '/components/sport_card.php'; ?>
+    <!-- Accordion Blocks Per Main Category -->
+    <div class="space-y-3">
+        <?php if (!empty($mainCategories)): ?>
+            <?php foreach ($mainCategories as $catName => $group): 
+                $groupHash = md5($catName);
+                $matchCount = count($group['matches']);
+            ?>
+                <div class="schedule-group-block rounded-xl bg-slate-900/90 border border-slate-800/80 overflow-hidden" data-group-hash="<?= $groupHash ?>">
+                    
+                    <!-- Clean Minimal Header -->
+                    <button onclick="toggleAccordion('acc-<?= $groupHash ?>')" class="w-full px-4 py-3 bg-slate-900 hover:bg-slate-850 flex items-center justify-between transition cursor-pointer select-none">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <h3 class="font-heading font-bold text-sm text-white"><?= htmlspecialchars($catName) ?></h3>
+                            <span class="text-[11px] text-slate-500 font-medium">(<?= $matchCount ?> รายการ)</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <i id="acc-icon-acc-<?= $groupHash ?>" class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-300"></i>
+                        </div>
+                    </button>
+
+                    <!-- Accordion Sub-Matches List -->
+                    <div id="acc-<?= $groupHash ?>" class="p-3 space-y-2 border-t border-slate-800/60 bg-slate-950/60">
+                        <?php foreach ($group['matches'] as $match): 
+                            $mId = $match['id'];
+                            $mResults = (isset($matchResults) && isset($matchResults[$mId])) ? $matchResults[$mId] : [];
+                            $t1Name = !empty($match['team1_name']) ? $presenter->getHouseNameTh($match['team1_name']) : 'ทีม A';
+                            $t2Name = !empty($match['team2_name']) ? $presenter->getHouseNameTh($match['team2_name']) : 'ทีม B';
+                            $t1Color = $match['team1_color'] ?? '#64748b';
+                            $t2Color = $match['team2_color'] ?? '#64748b';
+                            $t1Score = isset($match['team1_score']) ? intval($match['team1_score']) : 0;
+                            $t2Score = isset($match['team2_score']) ? intval($match['team2_score']) : 0;
+                            $subName = htmlspecialchars($match['sport_name']);
+                            $roundText = !empty($match['round_name']) ? htmlspecialchars($match['round_name']) : htmlspecialchars($match['category']);
+                        ?>
+                            <div class="rounded-lg bg-slate-900/90 border border-slate-800/60 p-3 hover:border-slate-700 transition">
+                                <div class="flex items-center justify-between border-b border-slate-800/60 pb-1.5 mb-2">
+                                    <div class="flex items-center gap-2 min-w-0 pr-2">
+                                        <?php if ($match['status'] === 'Live'): ?>
+                                            <span class="px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-mono font-bold text-[10px] border border-red-500/30 animate-pulse shrink-0">
+                                                LIVE
+                                            </span>
+                                        <?php elseif ($match['status'] === 'Completed'): ?>
+                                            <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono font-bold text-[10px] border border-emerald-500/20 shrink-0">
+                                                FT
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono text-[10px] shrink-0">
+                                                รอแข่ง
+                                            </span>
+                                        <?php endif; ?>
+                                        <span class="text-xs text-white font-bold truncate"><?= $subName ?></span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400 font-medium shrink-0"><?= $roundText ?></span>
+                                </div>
+
+                                <div class="flex items-center justify-between px-1">
+                                    <div class="flex items-center gap-1.5 max-w-[42%]">
+                                        <span class="w-2 h-2 rounded-full shrink-0" style="background-color: <?= $t1Color ?>"></span>
+                                        <span class="font-heading font-bold text-xs text-slate-200 truncate" style="color: <?= $t1Color ?>"><?= htmlspecialchars($t1Name) ?></span>
+                                    </div>
+
+                                    <div class="font-mono text-center">
+                                        <?php if ($match['status'] === 'Completed' || $match['status'] === 'Live'): ?>
+                                            <div class="flex items-center gap-1 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-xs">
+                                                <span class="font-bold text-white"><?= $t1Score ?></span>
+                                                <span class="text-slate-600">-</span>
+                                                <span class="font-bold text-white"><?= $t2Score ?></span>
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="text-[10px] text-slate-500">VS</span>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5 max-w-[42%] justify-end">
+                                        <span class="font-heading font-bold text-xs text-slate-200 truncate text-right" style="color: <?= $t2Color ?>"><?= htmlspecialchars($t2Name) ?></span>
+                                        <span class="w-2 h-2 rounded-full shrink-0" style="background-color: <?= $t2Color ?>"></span>
+                                    </div>
+                                </div>
+
+                                <?php if ($match['status'] === 'Completed' && !empty($mResults)): ?>
+                                    <div class="mt-2 pt-1.5 border-t border-slate-800/60 flex flex-wrap items-center gap-1">
+                                        <?php foreach ($mResults as $res): ?>
+                                            <?php if (!empty($res['medal'])): 
+                                                $medalIcon = 'fa-solid fa-medal text-amber-400';
+                                                if ($res['medal'] === 'Silver') $medalIcon = 'fa-solid fa-medal text-slate-300';
+                                                elseif ($res['medal'] === 'Bronze') $medalIcon = 'fa-solid fa-medal text-amber-600';
+                                            ?>
+                                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-950 text-[10px] text-slate-300 border border-slate-800">
+                                                    <i class="<?= $medalIcon ?>"></i> <?= htmlspecialchars($presenter->getHouseNameTh($res['house_name'])) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
             <?php endforeach; ?>
+        <?php else: ?>
+            <div class="rounded-xl bg-slate-900/40 border border-slate-800 p-8 text-center text-slate-500 text-sm">
+                <i class="fa-solid fa-trophy text-2xl mb-2 text-slate-600 block"></i>
+                ยังไม่มีการลงคะแนนหรือผลการแข่งขันที่เสร็จสิ้นสมบูรณ์ในระบบ
+            </div>
         <?php endif; ?>
     </div>
+
+
+    <script>
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById('acc-icon-' + id);
+            if (el) {
+                if (el.classList.contains('hidden')) {
+                    el.classList.remove('hidden');
+                    if (icon) icon.classList.add('rotate-180');
+                } else {
+                    el.classList.add('hidden');
+                    if (icon) icon.classList.remove('rotate-180');
+                }
+            }
+        }
+
+        function filterScheduleGroup(groupHash) {
+            const buttons = document.querySelectorAll('.schedule-tab-btn');
+            buttons.forEach(btn => {
+                btn.className = 'schedule-tab-btn px-4 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 font-medium text-xs whitespace-nowrap cursor-pointer transition';
+            });
+            const activeBtn = document.getElementById('schedule-tab-' + groupHash);
+            if (activeBtn) {
+                activeBtn.className = 'schedule-tab-btn px-4 py-1.5 rounded-full bg-blue-600 text-white font-bold text-xs whitespace-nowrap shadow-sm cursor-pointer transition';
+            }
+
+            const blocks = document.querySelectorAll('.schedule-group-block');
+            blocks.forEach(block => {
+                if (groupHash === 'all' || block.getAttribute('data-group-hash') === groupHash) {
+                    block.style.display = 'block';
+                } else {
+                    block.style.display = 'none';
+                }
+            });
+        }
+    </script>
+
+
+
+
 </section>
+
+<!-- THUMB-ZONE BOTTOM NAVIGATION BAR FOR MOBILE -->
+<nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-lg border-t border-slate-800 px-4 py-2 md:hidden shadow-2xl">
+    <div class="flex items-center justify-around">
+        <a href="#hero" class="flex flex-col items-center gap-1 text-red-500 font-medium text-[10px]">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span>หน้าแรก</span>
+        </a>
+        <a href="#leaderboard" class="flex flex-col items-center gap-1 text-slate-400 hover:text-amber-400 font-medium text-[10px] transition">
+            <i class="fa-solid fa-trophy text-lg"></i>
+            <span>คะแนน</span>
+        </a>
+        <a href="#schedule-live" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-400 font-medium text-[10px] transition">
+            <i class="fa-solid fa-calendar-day text-lg"></i>
+            <span>ตารางแข่ง</span>
+        </a>
+        <a href="#results" class="flex flex-col items-center gap-1 text-slate-400 hover:text-emerald-400 font-medium text-[10px] transition">
+            <i class="fa-solid fa-square-poll-vertical text-lg"></i>
+            <span>ผลการแข่ง</span>
+        </a>
+    </div>
+</nav>
+
+
+<!-- Drawer Toggle Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const drawerToggle = document.getElementById('drawer-toggle');
+        const drawerClose = document.getElementById('drawer-close');
+        const drawerMenu = document.getElementById('drawer-menu');
+        const drawerBackdrop = document.getElementById('drawer-backdrop');
+
+        function openDrawer() {
+            if (drawerMenu && drawerBackdrop) {
+                drawerMenu.classList.remove('translate-x-full');
+                drawerBackdrop.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function closeDrawer() {
+            if (drawerMenu && drawerBackdrop) {
+                drawerMenu.classList.add('translate-x-full');
+                drawerBackdrop.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        if (drawerToggle) drawerToggle.addEventListener('click', openDrawer);
+        if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+        if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeDrawer);
+    });
+</script>
 
 <?php include __DIR__ . '/components/footer.php'; ?>
 
 </body>
 </html>
+

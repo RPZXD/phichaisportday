@@ -13,10 +13,14 @@ $pathPrefix = $isOnLanding ? '' : 'index.php';
 ?>
 <header class="app-header sticky top-0 z-50 bg-[#070913]/70 backdrop-blur-xl border-b border-white/5 shadow-2xl transition-all duration-300">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <!-- Brand Logo -->
+        <!-- Brand Logo & Live Badge -->
         <a href="index.php" class="brand-logo text-xl md:text-2xl font-black flex items-center gap-2 hover:scale-105 transition-all duration-300 font-heading select-none">
             <i class="fa-solid fa-trophy text-[#d4af37] drop-shadow-[0_0_10px_rgba(212,175,55,0.5)]"></i>
             <span class="bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">Phichai Game 2026</span>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+              LIVE
+            </span>
         </a>
 
         <!-- Navigation / Action Controls -->
@@ -70,10 +74,16 @@ $pathPrefix = $isOnLanding ? '' : 'index.php';
                     <i class="fa-solid fa-sign-in mr-1.5"></i>เข้าสู่ระบบ
                 </a>
             </nav>
-            <!-- Mobile Sign In Button -->
-            <a href="index.php?route=login" class="lg:hidden bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition-transform active:scale-95">
-                <i class="fa-solid fa-sign-in mr-1"></i>เข้าสู่ระบบ
-            </a>
+            <div class="flex items-center gap-2 lg:hidden">
+                <!-- Mobile Sign In Button -->
+                <a href="index.php?route=login" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-md transition-transform active:scale-95">
+                    <i class="fa-solid fa-sign-in mr-1"></i>เข้าสู่ระบบ
+                </a>
+                <!-- Mobile Menu Drawer Button -->
+                <button id="drawer-toggle" aria-label="Toggle Menu" class="p-2 text-slate-300 hover:text-white bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition cursor-pointer">
+                    <i class="fa-solid fa-bars text-base"></i>
+                </button>
+            </div>
         <?php endif; ?>
     </div>
 </header>

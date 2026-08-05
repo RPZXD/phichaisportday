@@ -42,46 +42,62 @@ $results = (isset($matchResults) && isset($matchResults[$matchId])) ? $matchResu
     </div>
 <?php else: ?>
     <!-- Full-sized layout (Landing page grids and schedules) -->
-    <div class="glass-card rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-white/12 transition-all duration-300">
-        <div class="flex items-center gap-4">
-            <!-- Icon indicator based on status -->
+    <div class="glass-card bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-slate-700 transition-all shadow-xl">
+        <div class="flex items-center gap-3.5">
+            <!-- Status Icon -->
             <?php if ($status === 'Completed'): ?>
-                <div class="bg-yellow-500/10 border border-yellow-500/20 p-3.5 rounded-2xl text-yellow-500 text-xl shadow-md shrink-0">
+                <div class="bg-amber-500/10 border border-amber-500/20 w-12 h-12 rounded-xl flex items-center justify-center text-amber-400 text-xl shadow-md shrink-0">
                     <i class="fa-solid fa-trophy"></i>
                 </div>
             <?php elseif ($status === 'Live'): ?>
-                <div class="bg-rose-500/10 border border-rose-500/20 p-3.5 rounded-2xl text-rose-400 text-xl shadow-md shrink-0 animate-pulse">
-                    <i class="fa-solid fa-clock"></i>
+                <div class="bg-rose-500/20 border border-rose-500/40 w-12 h-12 rounded-xl flex items-center justify-center text-rose-400 text-xl shadow-md shrink-0 animate-pulse">
+                    <i class="fa-solid fa-bolt"></i>
                 </div>
             <?php else: ?>
-                <div class="bg-indigo-500/10 border border-indigo-500/20 p-3.5 rounded-2xl text-indigo-400 text-xl shadow-md shrink-0">
+                <div class="bg-indigo-500/10 border border-indigo-500/20 w-12 h-12 rounded-xl flex items-center justify-center text-indigo-400 text-xl shadow-md shrink-0">
                     <i class="fa-solid fa-calendar-days"></i>
                 </div>
             <?php endif; ?>
 
             <div>
-                <h4 class="text-lg font-bold text-white mb-0.5 font-heading tracking-wide"><?= $sportName ?></h4>
-                <span class="text-xs text-slate-400 block font-semibold leading-normal">
-                    หมวดหมู่: <?= $category ?><?php if ($match['bracket_id'] !== null): ?> • รอบ: <?= htmlspecialchars($match['round_name']) ?><?php endif; ?>
+                <div class="flex items-center gap-2">
+                    <h4 class="text-base md:text-lg font-extrabold text-white font-heading tracking-wide mb-0.5"><?= $sportName ?></h4>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700"><?= $category ?></span>
+                </div>
+                <span class="text-xs text-slate-400 block font-medium">
+                    <?php if ($match['bracket_id'] !== null): ?>
+                        รอบ: <span class="text-teal-400 font-semibold"><?= htmlspecialchars($match['round_name']) ?></span>
+                    <?php else: ?>
+                        วันที่: <span class="text-slate-300"><?= $eventDate ?></span>
+                    <?php endif; ?>
                 </span>
             </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 shrink-0">
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-slate-800">
             <?php if ($status === 'Completed'): ?>
-                <!-- Render medal standings or bracket winner if completed -->
+                <!-- Clean & Readable Result Medals -->
                 <?php if (!empty($results)): ?>
                     <div class="flex flex-wrap gap-2">
                         <?php foreach ($results as $res): ?>
                             <?php if (!empty($res['medal'])): 
-                                $medalIcon = 'fa-solid fa-medal text-yellow-500';
-                                if ($res['medal'] === 'Silver') $medalIcon = 'fa-solid fa-medal text-slate-300';
-                                elseif ($res['medal'] === 'Bronze') $medalIcon = 'fa-solid fa-medal text-amber-600';
+                                $medalIcon = 'fa-solid fa-medal text-amber-400';
+                                $badgeBg = 'bg-amber-500/10 border-amber-500/30 text-amber-300';
+                                if ($res['medal'] === 'Silver') {
+                                    $medalIcon = 'fa-solid fa-medal text-slate-300';
+                                    $badgeBg = 'bg-slate-700/30 border-slate-500/40 text-slate-200';
+                                } elseif ($res['medal'] === 'Bronze') {
+                                    $medalIcon = 'fa-solid fa-medal text-amber-600';
+                                    $badgeBg = 'bg-amber-800/20 border-amber-700/40 text-amber-400';
+                                }
                                 $hNameTh = $presenter->getHouseNameTh($res['house_name']);
                             ?>
-                                <div class="inline-flex bg-[rgba(var(--house-color-rgb),0.06)] text-[var(--house-color)] border border-[rgba(var(--house-color-rgb),0.18)] pl-2.5 pr-3.5 py-1 items-center gap-1.5 rounded-full text-xs font-semibold shadow-sm hover:bg-[rgba(var(--house-color-rgb),0.12)] transition-colors duration-200" <?= $presenter->getHouseStyle($res['color_code']) ?>>
-                                    <i class="<?= $medalIcon ?>"></i>
-                                    <span class="font-heading"><?= htmlspecialchars($hNameTh) ?></span>
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border shadow-sm <?= $badgeBg ?>">
+                                    <i class="<?= $medalIcon ?> text-sm"></i>
+                                    <span><?= htmlspecialchars($hNameTh) ?></span>
+                                    <?php if (isset($res['score']) && $res['score'] !== null): ?>
+                                        <span class="font-mono bg-slate-950/80 px-1.5 py-0.5 rounded text-[11px] text-white ml-1"><?= htmlspecialchars($res['score']) ?></span>
+                                    <?php endif; ?>
                                 </div>
                             <?php endif; ?>
                         <?php endforeach; ?>
@@ -91,25 +107,30 @@ $results = (isset($matchResults) && isset($matchResults[$matchId])) ? $matchResu
                         $winnerName = ($match['winner_house_id'] == $match['team1_house_id']) ? $match['team1_name'] : $match['team2_name'];
                         $winnerColor = ($match['winner_house_id'] == $match['team1_house_id']) ? $match['team1_color'] : $match['team2_color'];
                     ?>
-                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/5 border border-white/10" style="color: <?= $winnerColor ?>">
-                            <i class="fa-solid fa-trophy text-yellow-400"></i> ชนะ: <?= htmlspecialchars($presenter->getHouseNameTh($winnerName)) ?> (<?= $match['team1_score'] ?> - <?= $match['team2_score'] ?>)
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-slate-950 border border-slate-700 shadow-md">
+                            <span class="text-amber-400">🏆 ผู้ชนะ:</span>
+                            <span style="color: <?= $winnerColor ?>"><?= htmlspecialchars($presenter->getHouseNameTh($winnerName)) ?></span>
+                            <span class="font-mono text-white bg-slate-800 px-2 py-0.5 rounded"><?= intval($match['team1_score']) ?> - <?= intval($match['team2_score']) ?></span>
                         </div>
                     <?php else: ?>
-                        <span class="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-xs"><i class="fa-solid fa-ban text-[10px]"></i> บาย (ไม่มีผู้ชนะ/ไม่มีที่ 3)</span>
+                        <span class="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-xs">บาย (ไม่มีผู้ชนะ)</span>
                     <?php endif; ?>
                 <?php else: ?>
-                    <span class="text-slate-500 text-xs font-semibold">เสร็จสิ้นสมบูรณ์</span>
+                    <span class="text-emerald-400 text-xs font-bold bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">✓ เสร็จสิ้นการแข่งขัน</span>
                 <?php endif; ?>
             <?php else: ?>
-                <!-- Render status badge for Live/Scheduled -->
+                <!-- Live / Scheduled badge -->
                 <div class="select-none">
                     <?php if ($status === 'Live'): ?>
-                        <span class="inline-flex bg-rose-500/10 text-rose-400 border border-rose-500/25 text-xs font-bold px-4 py-1.5 rounded-full items-center shadow-inner animate-float-badge"><span class="live-pulse-glow mr-1.5"></span>กำลังแข่ง</span>
+                        <span class="inline-flex bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold px-3.5 py-1.5 rounded-xl items-center gap-1.5 animate-pulse">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> กำลังแข่งขัน
+                        </span>
                     <?php else: ?>
-                        <span class="inline-flex bg-slate-800 text-slate-400 border border-white/5 text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">รอการแข่งขัน</span>
+                        <span class="inline-flex bg-slate-800 text-slate-400 border border-slate-700 text-xs font-bold px-3.5 py-1.5 rounded-xl">รอการแข่งขัน</span>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 <?php endif; ?>
+
