@@ -8,6 +8,15 @@ CREATE TABLE IF NOT EXISTS `houses` (
     `color_code` VARCHAR(7) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table 1.5: Classroom Houses (Mapping class rooms to houses)
+CREATE TABLE IF NOT EXISTS `classroom_houses` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `grade_level` INT NOT NULL,
+    `room_number` INT NOT NULL,
+    `house_id` INT NOT NULL,
+    CONSTRAINT `fk_classroom_house` FOREIGN KEY (`house_id`) REFERENCES `houses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Table 2: Sports
 CREATE TABLE IF NOT EXISTS `sports` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,

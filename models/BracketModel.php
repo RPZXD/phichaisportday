@@ -216,14 +216,20 @@ class BracketModel {
             $team1_house_id = $bracket['team1_house_id'];
             $team2_house_id = $bracket['team2_house_id'];
 
-            // Validate that winner is one of the competitors
-            if ($winner_house_id != $team1_house_id && $winner_house_id != $team2_house_id) {
-                $this->db_sports->rollBack();
-                throw new Exception("ทีมผู้ชนะไม่อยู่ในคู่แข่งขันนี้");
-            }
+            $is_bye = ($winner_house_id === 'bye' || $winner_house_id === 0 || $winner_house_id === '0' || $winner_house_id === null);
 
-            // Determine loser
-            $loser_house_id = ($winner_house_id == $team1_house_id) ? $team2_house_id : $team1_house_id;
+            if (!$is_bye) {
+                // Validate that winner is one of the competitors
+                if ($winner_house_id != $team1_house_id && $winner_house_id != $team2_house_id) {
+                    $this->db_sports->rollBack();
+                    throw new Exception("ทีมผู้ชนะไม่อยู่ในคู่แข่งขันนี้");
+                }
+                $actual_winner_id = $winner_house_id;
+                $loser_house_id = ($winner_house_id == $team1_house_id) ? $team2_house_id : $team1_house_id;
+            } else {
+                $actual_winner_id = null;
+                $loser_house_id = null;
+            }
 
             // 2. Save scores in tournament_brackets
             $stmt_upd = $this->db_sports->prepare("
@@ -234,7 +240,7 @@ class BracketModel {
             $stmt_upd->execute([
                 ':team1_score' => $team1_score,
                 ':team2_score' => $team2_score,
-                ':winner_house_id' => $winner_house_id,
+                ':winner_house_id' => $actual_winner_id,
                 ':id' => $bracket_id
             ]);
 
@@ -247,46 +253,48 @@ class BracketModel {
             $stmt_del_res = $this->db_sports->prepare("DELETE FROM results WHERE match_id = :match_id");
             $stmt_del_res->execute([':match_id' => $match_id]);
 
-            // Determine points and medals based on round
-            $winner_points = 0;
-            $winner_medal = null;
-            $loser_points = 0;
-            $loser_medal = null;
+            if (!$is_bye && $actual_winner_id) {
+                // Determine points and medals strictly for top 1-3 places
+                if ($bracket['round_name'] === 'Finals') {
+                    $winner_points = ($points_winner > 0) ? $points_winner : 3;
+                    $loser_points = ($points_loser > 0) ? $points_loser : 2;
 
-            if ($bracket['round_name'] === 'Finals') {
-                $winner_points = 3;
-                $winner_medal = 'Gold';
-                $loser_points = 2;
-                $loser_medal = 'Silver';
-            } elseif ($bracket['round_name'] === 'Third-place') {
-                $winner_points = 1;
-                $winner_medal = 'Bronze';
-                $loser_points = 0;
-                $loser_medal = null;
-            }
+                    $stmt_ins_res = $this->db_sports->prepare("INSERT INTO results (match_id, house_id, points, medal) VALUES (:match_id, :house_id, :points, :medal)");
+                    
+                    // Insert Gold (1st place)
+                    $stmt_ins_res->execute([
+                        ':match_id' => $match_id,
+                        ':house_id' => $actual_winner_id,
+                        ':points' => $winner_points,
+                        ':medal' => 'Gold'
+                    ]);
 
-            $stmt_ins_res = $this->db_sports->prepare("INSERT INTO results (match_id, house_id, points, medal) VALUES (:match_id, :house_id, :points, :medal)");
-            
-            // Insert winner
-            $stmt_ins_res->execute([
-                ':match_id' => $match_id,
-                ':house_id' => $winner_house_id,
-                ':points' => $winner_points,
-                ':medal' => $winner_medal
-            ]);
+                    // Insert Silver (2nd place)
+                    if ($loser_house_id) {
+                        $stmt_ins_res->execute([
+                            ':match_id' => $match_id,
+                            ':house_id' => $loser_house_id,
+                            ':points' => $loser_points,
+                            ':medal' => 'Silver'
+                        ]);
+                    }
+                } elseif ($bracket['round_name'] === 'Third-place') {
+                    $winner_points = ($points_winner > 0) ? $points_winner : 1;
 
-            // Insert loser
-            if ($loser_house_id) {
-                $stmt_ins_res->execute([
-                    ':match_id' => $match_id,
-                    ':house_id' => $loser_house_id,
-                    ':points' => $loser_points,
-                    ':medal' => $loser_medal
-                ]);
+                    $stmt_ins_res = $this->db_sports->prepare("INSERT INTO results (match_id, house_id, points, medal) VALUES (:match_id, :house_id, :points, :medal)");
+                    
+                    // Insert Bronze (3rd place)
+                    $stmt_ins_res->execute([
+                        ':match_id' => $match_id,
+                        ':house_id' => $actual_winner_id,
+                        ':points' => $winner_points,
+                        ':medal' => 'Bronze'
+                    ]);
+                }
             }
 
             // 5. Propagate winner to next match if there is one
-            if ($bracket['next_match_id'] !== null) {
+            if ($bracket['next_match_id'] !== null && $actual_winner_id) {
                 $next_match_id = $bracket['next_match_id'];
                 $position = $bracket['next_match_position']; // 'team1' or 'team2'
 
@@ -296,21 +304,19 @@ class BracketModel {
                     $stmt_next = $this->db_sports->prepare("UPDATE tournament_brackets SET team2_house_id = :winner WHERE id = :id");
                 }
                 $stmt_next->execute([
-                    ':winner' => $winner_house_id,
+                    ':winner' => $actual_winner_id,
                     ':id' => $next_match_id
                 ]);
             }
 
             // Propagate loser of Semi-finals to Third-place match
-            if ($bracket['round_name'] === 'Semi-finals') {
+            if ($bracket['round_name'] === 'Semi-finals' && $loser_house_id) {
                 // Find the Third-place bracket for this sport
                 $stmt_tp = $this->db_sports->prepare("SELECT id FROM tournament_brackets WHERE sport_id = :sport_id AND round_name = 'Third-place' LIMIT 1");
                 $stmt_tp->execute([':sport_id' => $bracket['sport_id']]);
                 $tp_bracket = $stmt_tp->fetch(PDO::FETCH_ASSOC);
                 if ($tp_bracket) {
                     $tp_bracket_id = $tp_bracket['id'];
-                    // If Semi-final 1 (match_order = 1), loser goes to team1_house_id of Third-place
-                    // If Semi-final 2 (match_order = 2), loser goes to team2_house_id of Third-place
                     if ($bracket['match_order'] == 1) {
                         $stmt_tp_upd = $this->db_sports->prepare("UPDATE tournament_brackets SET team1_house_id = :loser WHERE id = :id");
                     } else {

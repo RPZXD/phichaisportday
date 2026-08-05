@@ -568,6 +568,11 @@
                                                             ชนะ: <span class="font-bold" style="color: <?= $winnerColor ?>"><?= htmlspecialchars($presenter->getHouseNameTh($winnerName)) ?></span>
                                                             <div class="text-[10px] text-slate-400 mt-0.5">(<?= $match['team1_score'] ?> - <?= $match['team2_score'] ?>)</div>
                                                         </div>
+                                                    <?php elseif ($match['status'] === 'Completed'): ?>
+                                                        <div class="text-xs">
+                                                            <span class="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full text-[10px]"><i class="fa-solid fa-ban text-[9px]"></i> บาย (ไม่มีผู้ชนะ/ไม่มีที่ 3)</span>
+                                                            <div class="text-[10px] text-slate-400 mt-0.5">(<?= $match['team1_score'] ?? 0 ?> - <?= $match['team2_score'] ?? 0 ?>)</div>
+                                                        </div>
                                                     <?php else: ?>
                                                         <div class="text-xs text-slate-400">
                                                             <?= $match['team1_name'] ? htmlspecialchars($presenter->getHouseNameTh($match['team1_name'])) : 'TBD' ?> vs 
@@ -1000,9 +1005,9 @@
                                         <span class="text-xs font-black"><?= $b['team2_score'] !== null ? $b['team2_score'] : '-' ?></span>
                                     </div>
 
-                                    <?php if ($b['winner_house_id'] === null && $b['team1_house_id'] && $b['team2_house_id']): ?>
-                                        <button class="mt-2 w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Quarter-finals', 'คู่ที่ <?= $b['match_order'] ?>', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>')">
-                                            บันทึกผล
+                                    <?php if ($b['team1_house_id'] && $b['team2_house_id']): ?>
+                                        <button class="mt-2 w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Quarter-finals', 'คู่ที่ <?= $b['match_order'] ?>', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>', '<?= $b['winner_house_id'] !== null ? $b['winner_house_id'] : ($b['status'] === 'Completed' ? 'bye' : '') ?>', <?= $b['team1_score'] !== null ? $b['team1_score'] : 0 ?>, <?= $b['team2_score'] !== null ? $b['team2_score'] : 0 ?>)">
+                                            <?= $b['status'] === 'Completed' ? 'แก้ไขผล' : 'บันทึกผล' ?>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -1048,9 +1053,9 @@
                                         <span class="text-xs font-black"><?= $b['team2_score'] !== null ? $b['team2_score'] : '-' ?></span>
                                     </div>
 
-                                    <?php if ($b['winner_house_id'] === null && $b['team1_house_id'] && $b['team2_house_id']): ?>
-                                        <button class="mt-2 w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Semi-finals', 'คู่ที่ <?= $b['match_order'] ?>', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>')">
-                                            บันทึกผล
+                                    <?php if ($b['team1_house_id'] && $b['team2_house_id']): ?>
+                                        <button class="mt-2 w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Semi-finals', 'คู่ที่ <?= $b['match_order'] ?>', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>', '<?= $b['winner_house_id'] !== null ? $b['winner_house_id'] : ($b['status'] === 'Completed' ? 'bye' : '') ?>', <?= $b['team1_score'] !== null ? $b['team1_score'] : 0 ?>, <?= $b['team2_score'] !== null ? $b['team2_score'] : 0 ?>)">
+                                            <?= $b['status'] === 'Completed' ? 'แก้ไขผล' : 'บันทึกผล' ?>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -1108,9 +1113,9 @@
                                         <span class="text-xs font-black"><?= $b['team2_score'] !== null ? $b['team2_score'] : '-' ?></span>
                                     </div>
 
-                                    <?php if ($b['winner_house_id'] === null && $b['team1_house_id'] && $b['team2_house_id']): ?>
-                                        <button class="mt-2 w-full bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-bold py-1.5 px-3 rounded-lg text-xs transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Finals', 'ชิงชนะเลิศ', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>')">
-                                            บันทึกผลชิงชนะเลิศ
+                                    <?php if ($b['team1_house_id'] && $b['team2_house_id']): ?>
+                                        <button class="mt-2 w-full bg-yellow-500 hover:bg-yellow-600 text-slate-950 font-bold py-1.5 px-3 rounded-lg text-xs transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Finals', 'ชิงชนะเลิศ', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>', '<?= $b['winner_house_id'] !== null ? $b['winner_house_id'] : ($b['status'] === 'Completed' ? 'bye' : '') ?>', <?= $b['team1_score'] !== null ? $b['team1_score'] : 0 ?>, <?= $b['team2_score'] !== null ? $b['team2_score'] : 0 ?>)">
+                                            <?= $b['status'] === 'Completed' ? 'แก้ไขผลชิงชนะเลิศ' : 'บันทึกผลชิงชนะเลิศ' ?>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -1122,8 +1127,10 @@
                                 <div class="bg-slate-800/80 border border-amber-600/20 rounded-2xl p-5 flex flex-col gap-3 relative shadow-md hover:border-amber-600/40 transition-all duration-300 bg-gradient-to-b from-slate-900/60 to-amber-700/2">
                                     <div class="text-[10px] text-slate-400 font-bold flex justify-between border-b border-white/5 pb-1">
                                         <span>คู่ชิงอันดับที่ 3</span>
-                                        <?php if ($b['status'] === 'Completed'): ?>
+                                        <?php if ($b['status'] === 'Completed' && $b['winner_house_id'] !== null): ?>
                                             <span class="text-amber-500 flex items-center gap-1"><i class="fa-solid fa-medal text-xs"></i>ได้อันดับที่ 3</span>
+                                        <?php elseif ($b['status'] === 'Completed' && $b['winner_house_id'] === null): ?>
+                                            <span class="text-amber-400/80 flex items-center gap-1"><i class="fa-solid fa-ban text-xs"></i>บาย (ไม่มีที่ 3)</span>
                                         <?php elseif ($b['status'] === 'Live'): ?>
                                             <span class="text-rose-400">กำลังแข่ง</span>
                                         <?php else: ?>
@@ -1131,6 +1138,12 @@
                                         <?php endif; ?>
                                     </div>
                                     
+                                    <?php if ($b['status'] === 'Completed' && $b['winner_house_id'] === null): ?>
+                                        <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-1.5">
+                                            <i class="fa-solid fa-ban text-amber-400"></i> รายการนี้ไม่มีการชิงอันดับ 3 (ผลเป็น บาย)
+                                        </div>
+                                    <?php endif; ?>
+
                                     <!-- Team 1 -->
                                     <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-amber-500' : 'text-slate-300' ?> <?= $b['team1_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
                                          <?= $b['team1_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team1_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) . '\', \'' . ($b['team1_color'] ?: '#334155') . '\')"' : '' ?>
@@ -1197,24 +1210,34 @@
 
                 <!-- Winner Selector -->
                 <div>
-                    <label class="text-xs font-bold text-slate-300 block mb-1">เลือกผู้ชนะการแข่งขัน (เพื่อเลื่อนเข้ารอบถัดไป)</label>
+                    <label class="text-xs font-bold text-slate-300 block mb-1">เลือกผลการแข่งขัน / ผู้ชนะ</label>
                     <select name="winner_house_id" id="bracket-modal-winner" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" required>
-                        <option value="">-- เลือกผู้ชนะ --</option>
+                        <option value="">-- เลือกผู้ชนะ / บาย --</option>
                         <option value="" id="bracket-modal-opt-team1">ทีม 1</option>
                         <option value="" id="bracket-modal-opt-team2">ทีม 2</option>
+                        <option value="bye" id="bracket-modal-opt-bye" class="font-bold text-amber-400">บาย (ไม่มีผู้ชนะ / ไม่มีชิงอันดับ 3)</option>
                     </select>
                 </div>
 
                 <!-- Leaderboard Points -->
-                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                    <div>
-                        <label class="text-xs font-bold text-slate-300 block mb-1">คะแนนลีดเดอร์บอร์ดผู้ชนะ</label>
-                        <input type="number" name="points_winner" id="bracket-modal-points-winner" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" required min="0" value="5">
+                <div id="bracket-modal-points-container" class="border-t border-white/5 pt-4">
+                    <h4 class="text-xs font-bold text-teal-400 mb-2 flex items-center gap-1.5 font-heading">
+                        <i class="fa-solid fa-trophy"></i>
+                        คะแนนลีดเดอร์บอร์ด (คิดคะแนนเฉพาะอันดับ 1-3)
+                    </h4>
+                    <div id="bracket-modal-points-grid" class="grid grid-cols-2 gap-4">
+                        <div id="bracket-modal-points-winner-box">
+                            <label id="bracket-modal-points-winner-label" class="text-xs font-bold text-slate-300 block mb-1">คะแนนอันดับ 1 (เหรียญทอง)</label>
+                            <input type="number" name="points_winner" id="bracket-modal-points-winner" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" min="0" value="3">
+                        </div>
+                        <div id="bracket-modal-points-loser-box">
+                            <label id="bracket-modal-points-loser-label" class="text-xs font-bold text-slate-300 block mb-1">คะแนนอันดับ 2 (เหรียญเงิน)</label>
+                            <input type="number" name="points_loser" id="bracket-modal-points-loser" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" min="0" value="2">
+                        </div>
                     </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-300 block mb-1">คะแนนลีดเดอร์บอร์ดผู้แพ้</label>
-                        <input type="number" name="points_loser" id="bracket-modal-points-loser" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" required min="0" value="2">
-                    </div>
+                    <p id="bracket-modal-points-note" class="text-[11px] text-slate-400 mt-1 hidden">
+                        <i class="fa-solid fa-circle-info text-teal-400 mr-1"></i> รอบคัดเลือกใช้สำหรับเลื่อนทีมผู้ชนะเข้ารอบเท่านั้น (คะแนนลีดเดอร์บอร์ดและเหรียญรางวัลจะได้รับเฉพาะอันดับ 1, 2 และ 3 ในรอบชิงชนะเลิศและชิงอันดับ 3)
+                    </p>
                 </div>
             </div>
 
@@ -1383,7 +1406,7 @@
         document.getElementById('score-modal').style.display = 'none';
     }
 
-    function openBracketScoreModal(bracketId, sportId, roundName, matchName, team1Id, team1Name, team2Id, team2Name) {
+    function openBracketScoreModal(bracketId, sportId, roundName, matchName, team1Id, team1Name, team2Id, team2Name, currentWinner = '', currentScore1 = 0, currentScore2 = 0) {
         document.getElementById('bracket-modal-id').value = bracketId;
         document.getElementById('bracket-modal-sport-id').value = sportId;
         
@@ -1392,33 +1415,56 @@
         
         const opt1 = document.getElementById('bracket-modal-opt-team1');
         const opt2 = document.getElementById('bracket-modal-opt-team2');
+        const optBye = document.getElementById('bracket-modal-opt-bye');
         
         opt1.value = team1Id;
-        opt1.innerText = 'คณะ' + team1Name;
+        opt1.innerText = 'ทีมผู้ชนะ: คณะ' + team1Name;
         opt2.value = team2Id;
-        opt2.innerText = 'คณะ' + team2Name;
+        opt2.innerText = 'ทีมผู้ชนะ: คณะ' + team2Name;
         
-        document.getElementById('bracket-modal-team1-score').value = '';
-        document.getElementById('bracket-modal-team2-score').value = '';
-        document.getElementById('bracket-modal-winner').value = '';
-        
-        // Suggest leaderboard points based on round
-        let pointsWinner = 5;
-        let pointsLoser = 2;
-        
-        if (roundName === 'Finals') {
-            pointsWinner = 15; // Gold
-            pointsLoser = 10;  // Silver
-        } else if (roundName === 'Semi-finals') {
-            pointsWinner = 5;
-            pointsLoser = 2;
-        } else {
-            pointsWinner = 3;
-            pointsLoser = 1;
+        if (optBye) {
+            if (roundName === 'Third-place') {
+                optBye.innerText = 'บาย (ไม่มีการชิงอันดับ 3 / ไม่มีที่ 3)';
+            } else {
+                optBye.innerText = 'บาย (ไม่มีผู้ชนะ / ผ่านสิทธิ์บาย)';
+            }
         }
         
-        document.getElementById('bracket-modal-points-winner').value = pointsWinner;
-        document.getElementById('bracket-modal-points-loser').value = pointsLoser;
+        document.getElementById('bracket-modal-team1-score').value = (currentScore1 !== null && currentScore1 !== '') ? currentScore1 : 0;
+        document.getElementById('bracket-modal-team2-score').value = (currentScore2 !== null && currentScore2 !== '') ? currentScore2 : 0;
+        document.getElementById('bracket-modal-winner').value = currentWinner !== undefined && currentWinner !== null ? currentWinner : '';
+        
+        // Show/Hide and configure leaderboard points based on round (Only 1st, 2nd, 3rd get points)
+        const winnerBox = document.getElementById('bracket-modal-points-winner-box');
+        const loserBox = document.getElementById('bracket-modal-points-loser-box');
+        const winnerLabel = document.getElementById('bracket-modal-points-winner-label');
+        const loserLabel = document.getElementById('bracket-modal-points-loser-label');
+        const pointsNote = document.getElementById('bracket-modal-points-note');
+        const pointsGrid = document.getElementById('bracket-modal-points-grid');
+
+        if (roundName === 'Finals') {
+            if (pointsGrid) pointsGrid.style.display = 'grid';
+            if (winnerBox) winnerBox.style.display = 'block';
+            if (loserBox) loserBox.style.display = 'block';
+            if (winnerLabel) winnerLabel.innerText = 'คะแนนอันดับ 1 (เหรียญทอง)';
+            if (loserLabel) loserLabel.innerText = 'คะแนนอันดับ 2 (เหรียญเงิน)';
+            document.getElementById('bracket-modal-points-winner').value = 3;
+            document.getElementById('bracket-modal-points-loser').value = 2;
+            if (pointsNote) pointsNote.classList.add('hidden');
+        } else if (roundName === 'Third-place') {
+            if (pointsGrid) pointsGrid.style.display = 'grid';
+            if (winnerBox) winnerBox.style.display = 'block';
+            if (loserBox) loserBox.style.display = 'none';
+            if (winnerLabel) winnerLabel.innerText = 'คะแนนอันดับ 3 (เหรียญทองแดง)';
+            document.getElementById('bracket-modal-points-winner').value = 1;
+            document.getElementById('bracket-modal-points-loser').value = 0;
+            if (pointsNote) pointsNote.classList.add('hidden');
+        } else {
+            if (pointsGrid) pointsGrid.style.display = 'none';
+            document.getElementById('bracket-modal-points-winner').value = 0;
+            document.getElementById('bracket-modal-points-loser').value = 0;
+            if (pointsNote) pointsNote.classList.remove('hidden');
+        }
         
         document.getElementById('bracket-modal-match-title').innerHTML = `
             <i class="fa-solid fa-trophy text-teal-400"></i>

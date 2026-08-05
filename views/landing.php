@@ -563,8 +563,10 @@
                                         <div class="bg-slate-900/60 border border-amber-600/20 rounded-2xl p-5 flex flex-col gap-3 relative shadow-md hover:border-amber-600/40 transition-all duration-300 bg-gradient-to-b from-slate-900/60 to-amber-700/2">
                                             <div class="text-[10px] text-slate-400 font-bold flex justify-between border-b border-white/5 pb-1">
                                                 <span>คู่ชิงอันดับที่ 3</span>
-                                                <?php if ($b['status'] === 'Completed'): ?>
+                                                <?php if ($b['status'] === 'Completed' && $b['winner_house_id'] !== null): ?>
                                                     <span class="text-amber-500 flex items-center gap-1"><i class="fa-solid fa-medal text-xs"></i>ได้อันดับที่ 3</span>
+                                                <?php elseif ($b['status'] === 'Completed' && $b['winner_house_id'] === null): ?>
+                                                    <span class="text-amber-400/80 flex items-center gap-1"><i class="fa-solid fa-ban text-xs"></i>บาย (ไม่มีที่ 3)</span>
                                                 <?php elseif ($b['status'] === 'Live'): ?>
                                                     <span class="text-rose-400">กำลังแข่ง</span>
                                                 <?php else: ?>
@@ -572,6 +574,12 @@
                                                 <?php endif; ?>
                                             </div>
                                             
+                                            <?php if ($b['status'] === 'Completed' && $b['winner_house_id'] === null): ?>
+                                                <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-1.5">
+                                                    <i class="fa-solid fa-ban text-amber-400"></i> รายการนี้ไม่มีการชิงอันดับ 3 (ผลเป็น บาย)
+                                                </div>
+                                            <?php endif; ?>
+
                                             <!-- Team 1 -->
                                             <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-amber-500' : 'text-slate-400' ?>">
                                                 <span class="flex items-center gap-2 text-xs truncate">

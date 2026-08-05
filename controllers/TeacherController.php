@@ -407,16 +407,25 @@ class TeacherController {
         $sport_id = filter_input(INPUT_POST, 'sport_id', FILTER_VALIDATE_INT);
         $team1_score = filter_input(INPUT_POST, 'team1_score', FILTER_VALIDATE_INT);
         $team2_score = filter_input(INPUT_POST, 'team2_score', FILTER_VALIDATE_INT);
-        $winner_house_id = filter_input(INPUT_POST, 'winner_house_id', FILTER_VALIDATE_INT);
+        $winner_house_id_raw = isset($_POST['winner_house_id']) ? trim($_POST['winner_house_id']) : '';
         $points_winner = filter_input(INPUT_POST, 'points_winner', FILTER_VALIDATE_INT) ?: 0;
         $points_loser = filter_input(INPUT_POST, 'points_loser', FILTER_VALIDATE_INT) ?: 0;
 
-        if (!$bracket_id || $team1_score === null || $team2_score === null || !$winner_house_id) {
-            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุคะแนนดิบและเลือกผู้ชนะ');
+        if ($winner_house_id_raw === 'bye' || $winner_house_id_raw === '0') {
+            $winner_house_id = 'bye';
+        } else {
+            $winner_house_id = filter_var($winner_house_id_raw, FILTER_VALIDATE_INT);
+        }
+
+        if ($team1_score === null) $team1_score = 0;
+        if ($team2_score === null) $team2_score = 0;
+
+        if (!$bracket_id || ($winner_house_id !== 'bye' && ($winner_house_id === false || $winner_house_id === null))) {
+            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุคะแนนดิบและเลือกผู้ชนะหรือระบุผลเป็นบาย');
         } else {
             try {
                 if ($this->bracketModel->recordBracketResult($bracket_id, $team1_score, $team2_score, $winner_house_id, $points_winner, $points_loser)) {
-                    UtilController::flashSuccess('บันทึกผลสำเร็จ', 'บันทึกคะแนนดิบและเลื่อนทีมผู้ชนะเข้ารอบถัดไปเรียบร้อยแล้ว');
+                    UtilController::flashSuccess('บันทึกผลสำเร็จ', 'บันทึกคะแนนและผลการแข่งขันเรียบร้อยแล้ว');
                 } else {
                     UtilController::flashError('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกผลการแข่งขันได้');
                 }

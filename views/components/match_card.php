@@ -69,14 +69,14 @@ $results = (isset($matchResults) && isset($matchResults[$matchId])) ? $matchResu
 
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 shrink-0">
             <?php if ($status === 'Completed'): ?>
-                <!-- Render medal standings if completed -->
+                <!-- Render medal standings or bracket winner if completed -->
                 <?php if (!empty($results)): ?>
                     <div class="flex flex-wrap gap-2">
                         <?php foreach ($results as $res): ?>
                             <?php if (!empty($res['medal'])): 
                                 $medalIcon = 'fa-solid fa-medal text-yellow-500';
                                 if ($res['medal'] === 'Silver') $medalIcon = 'fa-solid fa-medal text-slate-300';
-                                elseif ($res['medal'] === 'Bronze') $medalIcon = 'fa-solid fa-medal text-orange-500';
+                                elseif ($res['medal'] === 'Bronze') $medalIcon = 'fa-solid fa-medal text-amber-600';
                                 $hNameTh = $presenter->getHouseNameTh($res['house_name']);
                             ?>
                                 <div class="inline-flex bg-[rgba(var(--house-color-rgb),0.06)] text-[var(--house-color)] border border-[rgba(var(--house-color-rgb),0.18)] pl-2.5 pr-3.5 py-1 items-center gap-1.5 rounded-full text-xs font-semibold shadow-sm hover:bg-[rgba(var(--house-color-rgb),0.12)] transition-colors duration-200" <?= $presenter->getHouseStyle($res['color_code']) ?>>
@@ -86,8 +86,19 @@ $results = (isset($matchResults) && isset($matchResults[$matchId])) ? $matchResu
                             <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
+                <?php elseif ($match['bracket_id'] !== null): ?>
+                    <?php if ($match['winner_house_id'] !== null): 
+                        $winnerName = ($match['winner_house_id'] == $match['team1_house_id']) ? $match['team1_name'] : $match['team2_name'];
+                        $winnerColor = ($match['winner_house_id'] == $match['team1_house_id']) ? $match['team1_color'] : $match['team2_color'];
+                    ?>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/5 border border-white/10" style="color: <?= $winnerColor ?>">
+                            <i class="fa-solid fa-trophy text-yellow-400"></i> ชนะ: <?= htmlspecialchars($presenter->getHouseNameTh($winnerName)) ?> (<?= $match['team1_score'] ?> - <?= $match['team2_score'] ?>)
+                        </div>
+                    <?php else: ?>
+                        <span class="inline-flex items-center gap-1 font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-xs"><i class="fa-solid fa-ban text-[10px]"></i> บาย (ไม่มีผู้ชนะ/ไม่มีที่ 3)</span>
+                    <?php endif; ?>
                 <?php else: ?>
-                    <span class="text-slate-500 text-xs font-semibold">ไม่มีบันทึกผู้ชนะ</span>
+                    <span class="text-slate-500 text-xs font-semibold">เสร็จสิ้นสมบูรณ์</span>
                 <?php endif; ?>
             <?php else: ?>
                 <!-- Render status badge for Live/Scheduled -->
