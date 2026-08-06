@@ -4,6 +4,11 @@
  * Front Controller & Route Orchestrator
  */
 
+// Enable output buffering & Gzip compression to fit ModSecurity limit (<1MB)
+if (!ob_start("ob_gzhandler")) {
+    ob_start();
+}
+
 // Set local timezone for Thailand
 date_default_timezone_set('Asia/Bangkok');
 
