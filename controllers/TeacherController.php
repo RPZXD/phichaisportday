@@ -411,7 +411,9 @@ class TeacherController {
         $points_winner = filter_input(INPUT_POST, 'points_winner', FILTER_VALIDATE_INT) ?: 0;
         $points_loser = filter_input(INPUT_POST, 'points_loser', FILTER_VALIDATE_INT) ?: 0;
 
-        if ($winner_house_id_raw === 'bye' || $winner_house_id_raw === '0') {
+        if ($winner_house_id_raw === 'joint_third') {
+            $winner_house_id = 'joint_third';
+        } elseif ($winner_house_id_raw === 'bye' || $winner_house_id_raw === '0') {
             $winner_house_id = 'bye';
         } else {
             $winner_house_id = filter_var($winner_house_id_raw, FILTER_VALIDATE_INT);
@@ -420,8 +422,8 @@ class TeacherController {
         if ($team1_score === null) $team1_score = 0;
         if ($team2_score === null) $team2_score = 0;
 
-        if (!$bracket_id || ($winner_house_id !== 'bye' && ($winner_house_id === false || $winner_house_id === null))) {
-            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุคะแนนดิบและเลือกผู้ชนะหรือระบุผลเป็นบาย');
+        if (!$bracket_id || ($winner_house_id !== 'bye' && $winner_house_id !== 'joint_third' && ($winner_house_id === false || $winner_house_id === null))) {
+            UtilController::flashError('ข้อมูลไม่ครบถ้วน', 'กรุณาระบุคะแนนและเลือกผลการแข่งขัน (ผู้ชนะ / บาย / ที่ 3 ร่วม)');
         } else {
             try {
                 if ($this->bracketModel->recordBracketResult($bracket_id, $team1_score, $team2_score, $winner_house_id, $points_winner, $points_loser)) {

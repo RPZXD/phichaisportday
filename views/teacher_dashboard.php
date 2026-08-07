@@ -1122,12 +1122,24 @@
                             <?php endif; ?>
 
                             <!-- Third Place Playoff -->
-                            <?php if ($third_place_match): $b = $third_place_match; ?>
+                            <?php if ($third_place_match): 
+                                $b = $third_place_match;
+                                $isJointThird = false;
+                                if (isset($matchResults[$b['match_id']])) {
+                                    $bCount = 0;
+                                    foreach ($matchResults[$b['match_id']] as $mRes) {
+                                        if (isset($mRes['medal']) && $mRes['medal'] === 'Bronze') $bCount++;
+                                    }
+                                    if ($bCount >= 2) $isJointThird = true;
+                                }
+                            ?>
                                 <h4 class="text-xs font-bold text-amber-600 uppercase tracking-wider text-center border-b border-amber-600/10 pt-4 pb-2 font-heading">Third-place (ชิงอันดับ 3)</h4>
                                 <div class="bg-slate-800/80 border border-amber-600/20 rounded-2xl p-5 flex flex-col gap-3 relative shadow-md hover:border-amber-600/40 transition-all duration-300 bg-gradient-to-b from-slate-900/60 to-amber-700/2">
                                     <div class="text-[10px] text-slate-400 font-bold flex justify-between border-b border-white/5 pb-1">
                                         <span>คู่ชิงอันดับที่ 3</span>
-                                        <?php if ($b['status'] === 'Completed' && $b['winner_house_id'] !== null): ?>
+                                        <?php if ($b['status'] === 'Completed' && $isJointThird): ?>
+                                            <span class="text-amber-400 font-bold flex items-center gap-1"><i class="fa-solid fa-medal text-xs"></i>อันดับ 3 ร่วม (เหรียญทองแดงคู่)</span>
+                                        <?php elseif ($b['status'] === 'Completed' && $b['winner_house_id'] !== null): ?>
                                             <span class="text-amber-500 flex items-center gap-1"><i class="fa-solid fa-medal text-xs"></i>ได้อันดับที่ 3</span>
                                         <?php elseif ($b['status'] === 'Completed' && $b['winner_house_id'] === null): ?>
                                             <span class="text-amber-400/80 flex items-center gap-1"><i class="fa-solid fa-ban text-xs"></i>บาย (ไม่มีที่ 3)</span>
@@ -1138,37 +1150,43 @@
                                         <?php endif; ?>
                                     </div>
                                     
-                                    <?php if ($b['status'] === 'Completed' && $b['winner_house_id'] === null): ?>
+                                    <?php if ($b['status'] === 'Completed' && $isJointThird): ?>
+                                        <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-1.5">
+                                            <i class="fa-solid fa-medal text-amber-400"></i> ได้อันดับที่ 3 ร่วมกันทั้ง 2 ทีม (รับเหรียญทองแดงคู่)
+                                        </div>
+                                    <?php elseif ($b['status'] === 'Completed' && $b['winner_house_id'] === null): ?>
                                         <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-center text-xs text-amber-300 font-semibold flex items-center justify-center gap-1.5">
                                             <i class="fa-solid fa-ban text-amber-400"></i> รายการนี้ไม่มีการชิงอันดับ 3 (ผลเป็น บาย)
                                         </div>
                                     <?php endif; ?>
 
                                     <!-- Team 1 -->
-                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id']) ? 'font-bold text-amber-500' : 'text-slate-300' ?> <?= $b['team1_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                    <div class="flex justify-between items-center py-1.5 <?= ($isJointThird || ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team1_house_id'])) ? 'font-bold text-amber-500' : 'text-slate-300' ?> <?= $b['team1_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
                                          <?= $b['team1_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team1_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) . '\', \'' . ($b['team1_color'] ?: '#334155') . '\')"' : '' ?>
                                          <?= $b['team1_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <?= $b['team1_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team1_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) : 'รอผู้แพ้รอบรอง 1' ?>
+                                            <?php if ($isJointThird): ?><i class="fa-solid fa-medal text-amber-500 text-[10px]"></i><?php endif; ?>
                                         </span>
                                         <span class="text-xs font-black"><?= $b['team1_score'] !== null ? $b['team1_score'] : '-' ?></span>
                                     </div>
 
                                     <!-- Team 2 -->
-                                    <div class="flex justify-between items-center py-1.5 <?= ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id']) ? 'font-bold text-amber-500' : 'text-slate-300' ?> <?= $b['team2_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
+                                    <div class="flex justify-between items-center py-1.5 <?= ($isJointThird || ($b['winner_house_id'] !== null && $b['winner_house_id'] == $b['team2_house_id'])) ? 'font-bold text-amber-500' : 'text-slate-300' ?> <?= $b['team2_house_id'] ? 'cursor-pointer hover:bg-white/5 px-2 -mx-2 rounded-lg transition-colors' : '' ?>"
                                          <?= $b['team2_house_id'] ? 'onclick="showTeamAthletes(' . $selected_sport_id . ', ' . $b['team2_house_id'] . ', \'' . htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) . '\', \'' . ($b['team2_color'] ?: '#334155') . '\')"' : '' ?>
                                          <?= $b['team2_house_id'] ? 'title="คลิกเพื่อดูรายชื่อนักกีฬา"' : '' ?>>
                                         <span class="flex items-center gap-2 text-xs truncate">
                                             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: <?= $b['team2_color'] ?: '#334155' ?>"></span>
                                             <?= $b['team2_name'] ? htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) : 'รอผู้แพ้รอบรอง 2' ?>
+                                            <?php if ($isJointThird): ?><i class="fa-solid fa-medal text-amber-500 text-[10px]"></i><?php endif; ?>
                                         </span>
                                         <span class="text-xs font-black"><?= $b['team2_score'] !== null ? $b['team2_score'] : '-' ?></span>
                                     </div>
 
-                                    <?php if ($b['winner_house_id'] === null && $b['team1_house_id'] && $b['team2_house_id']): ?>
-                                        <button class="mt-2 w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Third-place', 'ชิงอันดับ 3', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>')">
-                                            บันทึกผลชิงอันดับ 3
+                                    <?php if ($b['team1_house_id'] && $b['team2_house_id']): ?>
+                                        <button class="mt-2 w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition-all cursor-pointer" onclick="openBracketScoreModal(<?= $b['id'] ?>, <?= $selected_sport_id ?>, 'Third-place', 'ชิงอันดับ 3', <?= $b['team1_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team1_name'])) ?>', <?= $b['team2_house_id'] ?>, '<?= htmlspecialchars($presenter->getHouseNameTh($b['team2_name'])) ?>', '<?= $isJointThird ? 'joint_third' : ($b['winner_house_id'] !== null ? $b['winner_house_id'] : ($b['status'] === 'Completed' ? 'bye' : '')) ?>', <?= $b['team1_score'] !== null ? $b['team1_score'] : 0 ?>, <?= $b['team2_score'] !== null ? $b['team2_score'] : 0 ?>)">
+                                            <?= $b['status'] === 'Completed' ? 'แก้ไขผลชิงอันดับ 3' : 'บันทึกผลชิงอันดับ 3' ?>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -1212,10 +1230,11 @@
                 <div>
                     <label class="text-xs font-bold text-slate-300 block mb-1">เลือกผลการแข่งขัน / ผู้ชนะ</label>
                     <select name="winner_house_id" id="bracket-modal-winner" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" required>
-                        <option value="">-- เลือกผู้ชนะ / บาย --</option>
+                        <option value="">-- เลือกผู้ชนะ / บาย / ที่ 3 ร่วม --</option>
                         <option value="" id="bracket-modal-opt-team1">ทีม 1</option>
                         <option value="" id="bracket-modal-opt-team2">ทีม 2</option>
-                        <option value="bye" id="bracket-modal-opt-bye" class="font-bold text-amber-400">บาย (ไม่มีผู้ชนะ / ไม่มีชิงอันดับ 3)</option>
+                        <option value="joint_third" id="bracket-modal-opt-joint-third" class="font-bold text-amber-400 hidden">ที่ 3 ร่วม (ทั้ง 2 ทีมได้เหรียญทองแดง)</option>
+                        <option value="bye" id="bracket-modal-opt-bye" class="font-bold text-slate-400">บาย (ไม่มีผู้ชนะ / ไม่มีชิงอันดับ 3)</option>
                     </select>
                 </div>
 
@@ -1415,6 +1434,7 @@
         
         const opt1 = document.getElementById('bracket-modal-opt-team1');
         const opt2 = document.getElementById('bracket-modal-opt-team2');
+        const optJointThird = document.getElementById('bracket-modal-opt-joint-third');
         const optBye = document.getElementById('bracket-modal-opt-bye');
         
         opt1.value = team1Id;
@@ -1422,12 +1442,12 @@
         opt2.value = team2Id;
         opt2.innerText = 'ทีมผู้ชนะ: คณะ' + team2Name;
         
-        if (optBye) {
-            if (roundName === 'Third-place') {
-                optBye.innerText = 'บาย (ไม่มีการชิงอันดับ 3 / ไม่มีที่ 3)';
-            } else {
-                optBye.innerText = 'บาย (ไม่มีผู้ชนะ / ผ่านสิทธิ์บาย)';
-            }
+        if (roundName === 'Third-place') {
+            if (optJointThird) optJointThird.classList.remove('hidden');
+            if (optBye) optBye.innerText = 'บาย (ไม่มีการชิงอันดับ 3 / ไม่มอบเหรียญ)';
+        } else {
+            if (optJointThird) optJointThird.classList.add('hidden');
+            if (optBye) optBye.innerText = 'บาย (ไม่มีผู้ชนะ / ผ่านสิทธิ์บาย)';
         }
         
         document.getElementById('bracket-modal-team1-score').value = (currentScore1 !== null && currentScore1 !== '') ? currentScore1 : 0;

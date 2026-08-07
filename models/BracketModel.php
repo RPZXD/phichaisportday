@@ -216,9 +216,13 @@ class BracketModel {
             $team1_house_id = $bracket['team1_house_id'];
             $team2_house_id = $bracket['team2_house_id'];
 
+            $is_joint_third = ($winner_house_id === 'joint_third');
             $is_bye = ($winner_house_id === 'bye' || $winner_house_id === 0 || $winner_house_id === '0' || $winner_house_id === null);
 
-            if (!$is_bye) {
+            if ($is_joint_third) {
+                $actual_winner_id = null;
+                $loser_house_id = null;
+            } elseif (!$is_bye) {
                 // Validate that winner is one of the competitors
                 if ($winner_house_id != $team1_house_id && $winner_house_id != $team2_house_id) {
                     $this->db_sports->rollBack();
@@ -253,7 +257,26 @@ class BracketModel {
             $stmt_del_res = $this->db_sports->prepare("DELETE FROM results WHERE match_id = :match_id");
             $stmt_del_res->execute([':match_id' => $match_id]);
 
-            if (!$is_bye && $actual_winner_id) {
+            if ($is_joint_third && $team1_house_id && $team2_house_id) {
+                $third_points = ($points_winner > 0) ? $points_winner : 1;
+                $stmt_ins_res = $this->db_sports->prepare("INSERT INTO results (match_id, house_id, points, medal) VALUES (:match_id, :house_id, :points, :medal)");
+                
+                // Insert Bronze for Team 1
+                $stmt_ins_res->execute([
+                    ':match_id' => $match_id,
+                    ':house_id' => $team1_house_id,
+                    ':points' => $third_points,
+                    ':medal' => 'Bronze'
+                ]);
+
+                // Insert Bronze for Team 2
+                $stmt_ins_res->execute([
+                    ':match_id' => $match_id,
+                    ':house_id' => $team2_house_id,
+                    ':points' => $third_points,
+                    ':medal' => 'Bronze'
+                ]);
+            } elseif (!$is_bye && $actual_winner_id) {
                 // Determine points and medals strictly for top 1-3 places
                 if ($bracket['round_name'] === 'Finals') {
                     $winner_points = ($points_winner > 0) ? $points_winner : 3;
