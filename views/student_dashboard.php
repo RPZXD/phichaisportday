@@ -482,29 +482,32 @@
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                                     <?php 
-                                        $gH = '-'; $sH = '-'; $bH = '-';
+                                        $gH = []; $sH = []; $bH = [];
                                         foreach ($sRes['top_results'] as $res) {
                                             $hName = $presenter->getHouseNameTh($res['house_name']);
                                             if ($res['medal'] === 'Gold' || $res['points'] == 3) {
-                                                $gH = '<span class="font-bold text-amber-300" style="color:' . htmlspecialchars($res['color_code']) . '">🥇 ' . htmlspecialchars($hName) . '</span>';
+                                                $gH[] = '<span class="font-bold text-amber-300" style="color:' . htmlspecialchars($res['color_code']) . '">🥇 ' . htmlspecialchars($hName) . '</span>';
                                             } elseif ($res['medal'] === 'Silver' || $res['points'] == 2) {
-                                                $sH = '<span class="font-bold text-slate-200" style="color:' . htmlspecialchars($res['color_code']) . '">🥈 ' . htmlspecialchars($hName) . '</span>';
+                                                $sH[] = '<span class="font-bold text-slate-200" style="color:' . htmlspecialchars($res['color_code']) . '">🥈 ' . htmlspecialchars($hName) . '</span>';
                                             } elseif ($res['medal'] === 'Bronze' || $res['points'] == 1) {
-                                                $bH = '<span class="font-bold text-amber-500" style="color:' . htmlspecialchars($res['color_code']) . '">🥉 ' . htmlspecialchars($hName) . '</span>';
+                                                $bH[] = '<span class="font-bold text-amber-500" style="color:' . htmlspecialchars($res['color_code']) . '">🥉 ' . htmlspecialchars($hName) . '</span>';
                                             }
                                         }
+                                        $gHtml = !empty($gH) ? implode('<br>', $gH) : '-';
+                                        $sHtml = !empty($sH) ? implode('<br>', $sH) : '-';
+                                        $bHtml = !empty($bH) ? implode('<br>', $bH) : '-';
                                     ?>
                                     <div class="bg-amber-400/5 p-2 rounded-lg border border-amber-400/10">
                                         <div class="text-[10px] text-amber-400 font-bold mb-0.5">อันดับ 1 (ทอง)</div>
-                                        <div><?= $gH ?></div>
+                                        <div><?= $gHtml ?></div>
                                     </div>
                                     <div class="bg-slate-300/5 p-2 rounded-lg border border-slate-300/10">
                                         <div class="text-[10px] text-slate-300 font-bold mb-0.5">อันดับ 2 (เงิน)</div>
-                                        <div><?= $sH ?></div>
+                                        <div><?= $sHtml ?></div>
                                     </div>
                                     <div class="bg-amber-700/5 p-2 rounded-lg border border-amber-700/10">
                                         <div class="text-[10px] text-amber-600 font-bold mb-0.5">อันดับ 3 (ทองแดง)</div>
-                                        <div><?= $bH ?></div>
+                                        <div><?= $bHtml ?></div>
                                     </div>
                                 </div>
                             </div>

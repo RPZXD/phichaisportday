@@ -784,29 +784,33 @@
                             <?php else: ?>
                                 <?php foreach ($topResultsBySport as $sportItem): ?>
                                     <?php 
-                                        $goldHouse = '-';
-                                        $silverHouse = '-';
-                                        $bronzeHouse = '-';
+                                        $goldHouses = [];
+                                        $silverHouses = [];
+                                        $bronzeHouses = [];
 
                                         foreach ($sportItem['top_results'] as $res) {
                                             $hName = $presenter->getHouseNameTh($res['house_name']);
                                             if ($res['medal'] === 'Gold' || $res['points'] == 3) {
-                                                $goldHouse = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-400/10 text-amber-300 border border-amber-400/20" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-crown text-amber-400"></i> ' . htmlspecialchars($hName) . '</span>';
+                                                $goldHouses[] = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-400/10 text-amber-300 border border-amber-400/20 mb-1" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-crown text-amber-400"></i> ' . htmlspecialchars($hName) . '</span>';
                                             } elseif ($res['medal'] === 'Silver' || $res['points'] == 2) {
-                                                $silverHouse = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-300/10 text-slate-200 border border-slate-300/20" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-medal text-slate-300"></i> ' . htmlspecialchars($hName) . '</span>';
+                                                $silverHouses[] = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-300/10 text-slate-200 border border-slate-300/20 mb-1" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-medal text-slate-300"></i> ' . htmlspecialchars($hName) . '</span>';
                                             } elseif ($res['medal'] === 'Bronze' || $res['points'] == 1) {
-                                                $bronzeHouse = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-700/10 text-amber-500 border border-amber-700/20" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-medal text-amber-600"></i> ' . htmlspecialchars($hName) . '</span>';
+                                                $bronzeHouses[] = '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-700/10 text-amber-500 border border-amber-700/20 mb-1" style="color: ' . htmlspecialchars($res['color_code']) . ';"><i class="fa-solid fa-medal text-amber-600"></i> ' . htmlspecialchars($hName) . '</span>';
                                             }
                                         }
+
+                                        $goldHtml = !empty($goldHouses) ? implode(' ', $goldHouses) : '-';
+                                        $silverHtml = !empty($silverHouses) ? implode(' ', $silverHouses) : '-';
+                                        $bronzeHtml = !empty($bronzeHouses) ? implode(' ', $bronzeHouses) : '-';
                                     ?>
                                     <tr class="border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors">
                                         <td class="p-3.5">
                                             <strong class="block text-white text-sm"><?= htmlspecialchars($sportItem['sport_name']) ?></strong>
                                             <span class="text-xs text-slate-400">หมวดหมู่: <?= htmlspecialchars($sportItem['category']) ?></span>
                                         </td>
-                                        <td class="p-3.5"><?= $goldHouse ?></td>
-                                        <td class="p-3.5"><?= $silverHouse ?></td>
-                                        <td class="p-3.5"><?= $bronzeHouse ?></td>
+                                        <td class="p-3.5"><?= $goldHtml ?></td>
+                                        <td class="p-3.5"><?= $silverHtml ?></td>
+                                        <td class="p-3.5"><?= $bronzeHtml ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
