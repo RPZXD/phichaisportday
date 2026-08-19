@@ -9,14 +9,48 @@ class CertificateModel {
     public function __construct($db_sports, $db_main) {
         $this->db_sports = $db_sports;
         $this->db_main = $db_main;
+        $this->ensureTableExists();
+    }
+
+    /**
+     * Ensure certificate_settings table exists in database
+     */
+    private function ensureTableExists() {
+        try {
+            $this->db_sports->exec("
+                CREATE TABLE IF NOT EXISTS `certificate_settings` (
+                    `id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `template_name` VARCHAR(100) DEFAULT 'Canva Template 2569',
+                    `bg_style` VARCHAR(50) DEFAULT 'canva-2569',
+                    `border_color` VARCHAR(20) DEFAULT '#f97316',
+                    `header_title` VARCHAR(255) DEFAULT 'โรงเรียนพิชัย',
+                    `cert_title` VARCHAR(255) DEFAULT 'ขอมอบเกียรติบัตรนี้ให้ไว้เพื่อแสดงว่า',
+                    `body_pattern_1` TEXT DEFAULT NULL,
+                    `body_pattern_2` TEXT DEFAULT 'เนื่องในกิจกรรมกีฬาสีโรงเรียนพิชัย Phichai Games 2026',
+                    `body_pattern_3` TEXT DEFAULT 'ระหว่างวันที่ 5 – 7 สิงหาคม 2569',
+                    `sig_left_title` VARCHAR(255) DEFAULT 'นางสาวรสสุคนธ์ วินชัยเหงา',
+                    `sig_right_title` VARCHAR(255) DEFAULT 'ผู้อำนวยการโรงเรียนพิชัย',
+                    `layout_json` LONGTEXT DEFAULT NULL,
+                    `font_style` VARCHAR(50) DEFAULT 'Kanit',
+                    `show_logos` TINYINT(1) DEFAULT 1,
+                    `is_active` TINYINT(1) DEFAULT 1
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
+        } catch (Throwable $e) {
+            // Silently continue if permissions restrict creation
+        }
     }
 
     /**
      * Get the active certificate template settings
      */
     public function getActiveSettings() {
-        $stmt = $this->db_sports->query("SELECT * FROM certificate_settings WHERE is_active = 1 LIMIT 1");
-        return $stmt->fetch();
+        try {
+            $stmt = $this->db_sports->query("SELECT * FROM certificate_settings WHERE is_active = 1 LIMIT 1");
+            return $stmt ? $stmt->fetch() : false;
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -86,24 +120,154 @@ class CertificateModel {
      * Get list of all athletes who won any medal or placement
      */
     public function getMedalWinners() {
-        $stmt = $this->db_sports->prepare("
-            SELECT r.id as result_id, r.medal, r.points, m.event_date,
-                   s.sport_name, s.category, h.house_name, h.color_code,
-                   er.student_id, stud.Stu_name, stud.Stu_sur,
-                   ch.grade_level, ch.room_number
+        return $this->getCanvaCertificatesList(4329, '2569');
+    }
+
+    /**
+     * Get full list of medal winners (Gold, Silver, Bronze) with running certificate numbers for Canva and printing
+     */
+    public function getCanvaCertificatesList($startNo = 4329, $year = '2569') {
+        $stmt = $this->db_sports->query("
+            SELECT 
+                s.id as sport_id,
+                s.sport_name,
+                s.category,
+                r.id as result_id,
+                r.medal,
+                r.points,
+                h.id as house_id,
+                h.house_name,
+                h.color_code,
+                er.student_id,
+                st.Stu_name,
+                st.Stu_sur,
+                ch.grade_level,
+                ch.room_number,
+                m.event_date
             FROM results r
             JOIN matches_events m ON r.match_id = m.id
             JOIN sports s ON m.sport_id = s.id
             JOIN houses h ON r.house_id = h.id
             JOIN event_registrations er ON er.sport_id = s.id
-            JOIN phichaia_student.student stud ON er.student_id = stud.Stu_id
-            JOIN classroom_houses ch ON SUBSTRING(stud.Stu_major, 1, 1) = ch.grade_level 
-                                    AND stud.Stu_room = ch.room_number 
+            JOIN phichaia_student.student st ON er.student_id = st.Stu_id
+            JOIN classroom_houses ch ON SUBSTRING(st.Stu_major, 1, 1) = ch.grade_level 
+                                    AND st.Stu_room = ch.room_number 
                                     AND ch.house_id = r.house_id
-            ORDER BY m.event_date DESC, r.id DESC
+            WHERE r.medal IN ('Gold', 'Silver', 'Bronze') OR r.points IN (3, 2, 1)
+            ORDER BY s.id ASC, FIELD(r.medal, 'Gold', 'Silver', 'Bronze'), r.points DESC, st.Stu_id ASC
         ");
-        $stmt->execute();
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $presenter = new SportPresenter();
+        $list = [];
+
+        foreach ($rows as $row) {
+            $medalType = $row['medal'];
+            if (empty($medalType)) {
+                if ($row['points'] == 3) $medalType = 'Gold';
+                elseif ($row['points'] == 2) $medalType = 'Silver';
+                elseif ($row['points'] == 1) $medalType = 'Bronze';
+            }
+
+            $awardName = 'รางวัลชนะเลิศ (เหรียญทอง)';
+            $awardSimple = 'ชนะเลิศ (เหรียญทอง)';
+            if ($medalType === 'Silver' || $row['points'] == 2) {
+                $awardName = 'รางวัลรองชนะเลิศ อันดับ 1 (เหรียญเงิน)';
+                $awardSimple = 'รองชนะเลิศอันดับที่ 1 (เหรียญเงิน)';
+            } elseif ($medalType === 'Bronze' || $row['points'] == 1) {
+                $awardName = 'รางวัลรองชนะเลิศ อันดับ 2 (เหรียญทองแดง)';
+                $awardSimple = 'รองชนะเลิศอันดับที่ 2 (เหรียญทองแดง)';
+            }
+
+            $sportDisplay = trim($row['sport_name']);
+            if (!empty($row['category'])) {
+                $sportDisplay .= ' (' . trim($row['category']) . ')';
+            }
+            if (mb_strpos($sportDisplay, 'กีฬา') !== 0) {
+                $sportDisplay = 'กีฬา' . $sportDisplay;
+            }
+
+            $list[] = [
+                'result_id' => $row['result_id'],
+                'student_id' => $row['student_id'],
+                'fullname' => trim($row['Stu_name'] . ' ' . $row['Stu_sur']),
+                'Stu_name' => $row['Stu_name'],
+                'Stu_sur' => $row['Stu_sur'],
+                'medal' => $medalType,
+                'award' => $awardName,
+                'award_simple' => $awardSimple,
+                'sport_name' => $row['sport_name'],
+                'category' => $row['category'],
+                'sport' => $sportDisplay,
+                'house_name' => $row['house_name'],
+                'house_name_th' => $presenter->getHouseNameTh($row['house_name']),
+                'color_code' => $row['color_code'],
+                'grade_level' => $row['grade_level'],
+                'room_number' => $row['room_number'],
+                'event_date' => $row['event_date']
+            ];
+        }
+
+        // Sort by sport categorization order
+        usort($list, function($a, $b) {
+            $getSortKey = function($sportName) {
+                $name = trim($sportName);
+                $subScore = 99;
+                if (mb_strpos($name, 'ม.ต้น') !== false && (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false)) {
+                    $subScore = 1;
+                } elseif (mb_strpos($name, 'ม.ต้น') !== false && (mb_strpos($name, 'ชาย') !== false || mb_strpos($name, 'ช') !== false)) {
+                    $subScore = 2;
+                } elseif (mb_strpos($name, 'ม.ปลาย') !== false && (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false)) {
+                    $subScore = 3;
+                } elseif (mb_strpos($name, 'ม.ปลาย') !== false && (mb_strpos($name, 'ชาย') !== false || mb_strpos($name, 'ช') !== false)) {
+                    $subScore = 4;
+                } elseif (mb_strpos($name, 'หญิง') !== false || mb_strpos($name, 'ญ') !== false) {
+                    $subScore = 1;
+                }
+
+                if (mb_strpos($name, 'วอลเลย์บอล') !== false) return [1, 0, $subScore];
+                if (mb_strpos($name, 'ตะกร้อ') !== false) return [2, 0, $subScore];
+                if (mb_strpos($name, 'เปตอง') !== false) return [3, 0, $subScore];
+                if (mb_strpos($name, 'วู้ดบอล') !== false) {
+                    $typeScore = (mb_strpos($name, 'คู่') !== false) ? 2 : 1;
+                    return [4, $typeScore, $subScore];
+                }
+                if (mb_strpos($name, 'ฟุตบอล') !== false) return [5, 0, $subScore];
+                if (mb_strpos($name, 'บาสเกตบอล') !== false) return [6, 0, $subScore];
+                if (mb_strpos($name, 'เทเบิลเทนนิส') !== false) return [7, 0, $subScore];
+
+                return [8, 0, $subScore];
+            };
+
+            $keyA = $getSortKey($a['sport_name']);
+            $keyB = $getSortKey($b['sport_name']);
+
+            if ($keyA[0] !== $keyB[0]) return $keyA[0] <=> $keyB[0];
+            if ($keyA[1] !== $keyB[1]) return $keyA[1] <=> $keyB[1];
+            if ($keyA[2] !== $keyB[2]) return $keyA[2] <=> $keyB[2];
+
+            // Order by Medal Gold -> Silver -> Bronze
+            $medalOrder = ['Gold' => 1, 'Silver' => 2, 'Bronze' => 3];
+            $mA = $medalOrder[$a['medal']] ?? 4;
+            $mB = $medalOrder[$b['medal']] ?? 4;
+            if ($mA !== $mB) return $mA <=> $mB;
+
+            return strcmp($a['fullname'], $b['fullname']);
+        });
+
+        // Assign running cert numbers starting at $startNo
+        $currentNo = intval($startNo);
+        foreach ($list as $idx => &$item) {
+            $item['seq'] = $idx + 1;
+            $item['cert_no_raw'] = $currentNo;
+            $item['cert_no'] = $currentNo . '/' . $year;
+            $item['no'] = $currentNo . '/' . $year; // For Canva column match
+            $item['name'] = $item['fullname'];     // For Canva column match
+            $currentNo++;
+        }
+        unset($item);
+
+        return $list;
     }
 
     /**

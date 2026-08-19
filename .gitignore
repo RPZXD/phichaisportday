@@ -1,2 +1,3 @@
 config/db_credentials.php
 diff_landing.txt
+.DS_Store

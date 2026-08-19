@@ -63,14 +63,30 @@ $pathPrefix = $isOnLanding ? '' : 'index.php';
                 </div>
             </div>
         <?php else: ?>
-            <!-- Guest State (Landing Page Mode) -->
-            <nav class="hidden lg:flex items-center gap-8 font-semibold">
-                <a href="<?= $pathPrefix ?>#houses" class="text-slate-300 hover:text-white transition-colors duration-200 nav-link-glow">คณะสี</a>
-                <a href="<?= $pathPrefix ?>#leaderboard" class="text-slate-300 hover:text-white transition-colors duration-200 nav-link-glow">ตารางคะแนน</a>
-                <a href="<?= $pathPrefix ?>#brackets" class="text-slate-300 hover:text-white transition-colors duration-200 nav-link-glow">สายการแข่ง</a>
-                <a href="<?= $pathPrefix ?>#results" class="text-slate-300 hover:text-white transition-colors duration-200 nav-link-glow">ผลการแข่ง</a>
-                <a href="<?= $pathPrefix ?>#sports" class="text-slate-300 hover:text-white transition-colors duration-200 nav-link-glow">ชนิดกีฬา</a>
-                <a href="index.php?route=login" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold px-6 py-2 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 hover:-translate-y-0.5 select-none cursor-pointer">
+            <!-- Guest State (Public Mode) -->
+            <?php
+            $curRoute = $activeRoute ?? ($route ?? 'landing');
+            ?>
+            <nav class="hidden lg:flex items-center gap-5 font-semibold text-xs select-none">
+                <a href="index.php?route=landing" class="transition-colors duration-200 py-1 px-2.5 rounded-lg <?= ($curRoute === 'landing') ? 'text-white bg-white/10 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' ?>">
+                    หน้าแรก
+                </a>
+                <a href="index.php?route=leaderboard" class="transition-colors duration-200 py-1 px-2.5 rounded-lg <?= ($curRoute === 'leaderboard') ? 'text-amber-300 bg-amber-500/15 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' ?>">
+                    ตารางคะแนน
+                </a>
+                <a href="index.php?route=schedule" class="transition-colors duration-200 py-1 px-2.5 rounded-lg <?= ($curRoute === 'schedule') ? 'text-blue-300 bg-blue-500/15 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' ?>">
+                    ตารางแข่งสด
+                </a>
+                <a href="index.php?route=brackets" class="transition-colors duration-200 py-1 px-2.5 rounded-lg <?= ($curRoute === 'brackets') ? 'text-teal-300 bg-teal-500/15 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' ?>">
+                    สายการแข่ง
+                </a>
+                <a href="index.php?route=houses" class="transition-colors duration-200 py-1 px-2.5 rounded-lg <?= ($curRoute === 'houses') ? 'text-emerald-300 bg-emerald-500/15 font-bold' : 'text-slate-300 hover:text-white hover:bg-white/5' ?>">
+                    คณะสี
+                </a>
+                <a href="index.php?route=certificates" class="py-1 px-3 rounded-lg flex items-center gap-1.5 font-bold shadow-sm transition-all <?= ($curRoute === 'certificates') ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-orange-500/20' : 'text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 border border-amber-500/30' ?>">
+                    <i class="fa-solid fa-award text-amber-400"></i>ค้นหาเกียรติบัตร
+                </a>
+                <a href="index.php?route=login" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold px-4 py-2 rounded-xl shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 hover:-translate-y-0.5 select-none cursor-pointer text-xs">
                     <i class="fa-solid fa-sign-in mr-1.5"></i>เข้าสู่ระบบ
                 </a>
             </nav>

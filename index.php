@@ -47,8 +47,10 @@ try {
         $route = isset($_SESSION['user']) ? 'dashboard' : 'landing';
     }
 
-    // Force login for all routes except 'login' and 'landing'
-    if (!isset($_SESSION['user']) && !in_array($route, ['login', 'landing'])) {
+    $publicRoutes = ['login', 'landing', 'leaderboard', 'schedule', 'brackets', 'houses', 'certificates', 'public_certificate'];
+
+    // Force login for routes that are not public
+    if (!isset($_SESSION['user']) && !in_array($route, $publicRoutes)) {
         header('Location: index.php?route=landing');
         exit();
     }
@@ -60,15 +62,34 @@ try {
             $resultModel = new ResultModel($db_sports, $db_main);
             $matchModel = new MatchModel($db_sports, $db_main);
             $sportModel = new SportModel($db_sports);
+            $certificateModel = new CertificateModel($db_sports, $db_main);
             
             $leaderboard = $resultModel->getLeaderboard();
             $matches = $matchModel->getAllMatches();
             $sports = $sportModel->getAllSports();
+            $certificatesList = $certificateModel->getCanvaCertificatesList(4329, '2569');
             
-            $bracketModel = new BracketModel($db_sports);
-            $active_brackets = $bracketModel->getAllActiveBrackets();
+            $presenter = new SportPresenter();
+            require_once __DIR__ . '/views/landing.php';
+            break;
+
+        case 'leaderboard':
+            $db_sports = Database::getSportsConnection();
+            $db_main = Database::getMainConnection();
+            $resultModel = new ResultModel($db_sports, $db_main);
             
-            // Get results lookup for completed matches
+            $leaderboard = $resultModel->getLeaderboard();
+            $presenter = new SportPresenter();
+            require_once __DIR__ . '/views/public_leaderboard.php';
+            break;
+
+        case 'schedule':
+            $db_sports = Database::getSportsConnection();
+            $db_main = Database::getMainConnection();
+            $matchModel = new MatchModel($db_sports, $db_main);
+            $resultModel = new ResultModel($db_sports, $db_main);
+            
+            $matches = $matchModel->getAllMatches();
             $matchResults = [];
             foreach ($matches as $match) {
                 if ($match['status'] === 'Completed') {
@@ -77,7 +98,78 @@ try {
             }
             
             $presenter = new SportPresenter();
-            require_once __DIR__ . '/views/landing.php';
+            require_once __DIR__ . '/views/public_schedule.php';
+            break;
+
+        case 'brackets':
+            $db_sports = Database::getSportsConnection();
+            $db_main = Database::getMainConnection();
+            $bracketModel = new BracketModel($db_sports);
+            $resultModel = new ResultModel($db_sports, $db_main);
+            $matchModel = new MatchModel($db_sports, $db_main);
+
+            $active_brackets = $bracketModel->getAllActiveBrackets();
+            $matches = $matchModel->getAllMatches();
+            $matchResults = [];
+            foreach ($matches as $match) {
+                if ($match['status'] === 'Completed') {
+                    $matchResults[$match['id']] = $resultModel->getMatchResults($match['id']);
+                }
+            }
+
+            $presenter = new SportPresenter();
+            require_once __DIR__ . '/views/public_brackets.php';
+            break;
+
+        case 'houses':
+            $db_sports = Database::getSportsConnection();
+            $db_main = Database::getMainConnection();
+            $resultModel = new ResultModel($db_sports, $db_main);
+            
+            $leaderboard = $resultModel->getLeaderboard();
+            $presenter = new SportPresenter();
+            require_once __DIR__ . '/views/public_houses.php';
+            break;
+
+        case 'certificates':
+            $db_sports = Database::getSportsConnection();
+            $db_main = Database::getMainConnection();
+            $certificateModel = new CertificateModel($db_sports, $db_main);
+            
+            $certificatesList = $certificateModel->getCanvaCertificatesList(4329, '2569');
+            $presenter = new SportPresenter();
+            require_once __DIR__ . '/views/public_certificates.php';
+            break;
+
+        case 'public_certificate':
+            $db_sports = Database::getSportsConnection();
+            $db_main = Database::getMainConnection();
+            $resultModel = new ResultModel($db_sports, $db_main);
+            $certificateModel = new CertificateModel($db_sports, $db_main);
+
+            $result_id = filter_input(INPUT_GET, 'result_id', FILTER_VALIDATE_INT);
+            $student_id = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_SPECIAL_CHARS);
+            $certNo = filter_input(INPUT_GET, 'cert_no', FILTER_SANITIZE_SPECIAL_CHARS);
+
+            if (!$result_id || !$student_id) {
+                header('Location: index.php?route=certificates');
+                exit();
+            }
+
+            $certificate = $resultModel->getCertificateDetails($result_id, $student_id);
+            if (!$certificate) {
+                header('Location: index.php?route=certificates');
+                exit();
+            }
+
+            if (empty($certNo)) {
+                $certNo = '4329/2569';
+            }
+
+            $settings = $certificateModel->getActiveSettings();
+            $layout = [];
+            $presenter = new SportPresenter();
+            require_once __DIR__ . '/views/certificate.php';
             break;
 
         case 'login':
@@ -104,9 +196,8 @@ try {
             $controller->handleRequest();
             break;
 
-        case 'leaderboard':
         case 'certificate':
-            // Accessible to students and teachers via StudentController handles
+            // Accessible to students and teachers via StudentController
             $controller = new StudentController();
             $controller->handleRequest();
             break;

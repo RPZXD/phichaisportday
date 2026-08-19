@@ -41,6 +41,12 @@ class TeacherCertificateController {
             }
         } else {
             switch ($action) {
+                case 'export_canva_csv':
+                    $this->exportCanvaCsv();
+                    break;
+                case 'bulk_print':
+                    $this->bulkPrint();
+                    break;
                 default:
                     $this->showDesigner();
                     break;
@@ -52,32 +58,35 @@ class TeacherCertificateController {
      * Display the template designer dashboard
      */
     private function showDesigner() {
+        $start_no = filter_input(INPUT_GET, 'start_no', FILTER_VALIDATE_INT) ?: 4329;
+        $year = filter_input(INPUT_GET, 'year', FILTER_SANITIZE_SPECIAL_CHARS) ?: '2569';
+
         $settings = $this->certificateModel->getActiveSettings();
         
         // If settings don't exist, retrieve or seed a basic array
         if (!$settings) {
             $settings = [
-                'bg_style' => 'classic-gold',
-                'border_color' => '#d4af37',
-                'header_title' => '🏆 การแข่งขันกีฬาสีโรงเรียน ประจำปี 2569',
-                'cert_title' => 'เกียรติบัตรเหรียญรางวัล',
-                'body_pattern_1' => 'ได้เข้าร่วมการแข่งขันและสร้างผลงานอันยอดเยี่ยมรุ่งโรจน์ในนามสังกัด',
-                'body_pattern_2' => 'ได้รับรางวัลชนะเลิศอันดับเกียรติยศสูงสุด',
-                'body_pattern_3' => 'ในประเภทกีฬา {sport_name} (หมวดหมู่: {category})',
-                'sig_left_title' => 'ผู้อำนวยการจัดการแข่งขัน',
-                'sig_right_title' => 'ประธานสภากีฬาโรงเรียน',
+                'bg_style' => 'canva-2569',
+                'border_color' => '#f97316',
+                'header_title' => 'โรงเรียนพิชัย',
+                'cert_title' => 'ขอมอบเกียรติบัตรนี้ให้ไว้เพื่อแสดงว่า',
+                'body_pattern_1' => '',
+                'body_pattern_2' => 'เนื่องในกิจกรรมกีฬาสีโรงเรียนพิชัย Phichai Games 2026',
+                'body_pattern_3' => 'ระหว่างวันที่ 5 – 7 สิงหาคม 2569',
+                'sig_left_title' => 'นางสาวรสสุคนธ์ วินชัยเหงา',
+                'sig_right_title' => 'ผู้อำนวยการโรงเรียนพิชัย',
                 'font_style' => 'Kanit',
                 'show_logos' => 1,
                 'layout_json' => json_encode([
-                    "header_text" => [ "top" => 12, "fontSize" => 18, "color" => "#8a6d1c", "fontWeight" => "black" ],
-                    "main_title"  => [ "top" => 20, "fontSize" => 36, "color" => "#1e293b", "fontWeight" => "black" ],
-                    "prefix_text" => [ "top" => 36, "fontSize" => 14, "color" => "#64748b", "fontWeight" => "semibold" ],
-                    "student_name" => [ "top" => 42, "fontSize" => 44, "color" => "#0f172a", "fontWeight" => "black" ],
-                    "body_line1"  => [ "top" => 54, "fontSize" => 16, "color" => "#475569", "fontWeight" => "normal" ],
-                    "medal_badge" => [ "top" => 62, "fontSize" => 18, "color" => "#8a6d1c", "fontWeight" => "black" ],
-                    "body_line2"  => [ "top" => 72, "fontSize" => 16, "color" => "#475569", "fontWeight" => "normal" ],
-                    "date_text"   => [ "top" => 80, "fontSize" => 12, "color" => "#64748b", "fontWeight" => "semibold" ],
-                    "signatures"  => [ "top" => 86, "fontSize" => 12, "color" => "#64748b", "fontWeight" => "semibold" ],
+                    "header_text" => [ "top" => 16, "fontSize" => 26, "color" => "#d97706", "fontWeight" => "black" ],
+                    "main_title"  => [ "top" => 23, "fontSize" => 22, "color" => "#3b0764", "fontWeight" => "bold" ],
+                    "prefix_text" => [ "top" => 28, "fontSize" => 14, "color" => "#64748b", "fontWeight" => "semibold" ],
+                    "student_name" => [ "top" => 33, "fontSize" => 28, "color" => "#ffffff", "fontWeight" => "black" ],
+                    "body_line1"  => [ "top" => 47, "fontSize" => 20, "color" => "#4c1d95", "fontWeight" => "bold" ],
+                    "medal_badge" => [ "top" => 54, "fontSize" => 18, "color" => "#3b0764", "fontWeight" => "bold" ],
+                    "body_line2"  => [ "top" => 64, "fontSize" => 15, "color" => "#1e1b4b", "fontWeight" => "semibold" ],
+                    "date_text"   => [ "top" => 71, "fontSize" => 13, "color" => "#475569", "fontWeight" => "normal" ],
+                    "signatures"  => [ "top" => 84, "fontSize" => 14, "color" => "#0f172a", "fontWeight" => "semibold" ],
                     "seal"        => [ "top" => 78, "scale" => 1.0 ]
                 ])
             ];
@@ -88,10 +97,71 @@ class TeacherCertificateController {
         if (!isset($settings['show_logos'])) $settings['show_logos'] = 1;
 
         $layout = json_decode($settings['layout_json'], true) ?: [];
-        $winners = $this->certificateModel->getMedalWinners();
+        $winners = $this->certificateModel->getCanvaCertificatesList($start_no, $year);
         $presenter = new SportPresenter();
 
         require_once __DIR__ . '/../views/teacher_certificate.php';
+    }
+
+    /**
+     * Export medal-winning athletes for Canva Bulk Create (Data CSV)
+     * Headers: no, name, award, sport
+     */
+    private function exportCanvaCsv() {
+        $start_no = filter_input(INPUT_GET, 'start_no', FILTER_VALIDATE_INT) ?: 4329;
+        $year = filter_input(INPUT_GET, 'year', FILTER_SANITIZE_SPECIAL_CHARS) ?: '2569';
+
+        $winners = $this->certificateModel->getCanvaCertificatesList($start_no, $year);
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="Canva_BulkCreate_Certificates_' . $year . '.csv"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        // UTF-8 BOM for Thai language compatibility in Excel & Canva
+        fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        // CSV Headers corresponding directly to Canva {no}, {name}, {award}, {sport}
+        fputcsv($out, ['no', 'name', 'award', 'sport']);
+
+        foreach ($winners as $row) {
+            fputcsv($out, [
+                $row['no'],
+                $row['name'],
+                $row['award'],
+                $row['sport']
+            ]);
+        }
+
+        fclose($out);
+        exit();
+    }
+
+    /**
+     * Bulk print all certificates for all medal winners
+     */
+    private function bulkPrint() {
+        $start_no = filter_input(INPUT_GET, 'start_no', FILTER_VALIDATE_INT) ?: 4329;
+        $year = filter_input(INPUT_GET, 'year', FILTER_SANITIZE_SPECIAL_CHARS) ?: '2569';
+
+        $settings = $this->certificateModel->getActiveSettings();
+        if (!$settings) {
+            $settings = [
+                'bg_style' => 'canva-2569',
+                'border_color' => '#f97316',
+                'header_title' => 'โรงเรียนพิชัย',
+                'cert_title' => 'ขอมอบเกียรติบัตรนี้ให้ไว้เพื่อแสดงว่า',
+                'font_style' => 'Kanit',
+                'show_logos' => 1
+            ];
+        }
+
+        $winners = $this->certificateModel->getCanvaCertificatesList($start_no, $year);
+        $presenter = new SportPresenter();
+
+        require_once __DIR__ . '/../views/bulk_certificate.php';
+        exit();
     }
 
     /**

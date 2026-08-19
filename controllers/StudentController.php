@@ -147,7 +147,9 @@ class StudentController {
      */
     private function generateCertificate() {
         $result_id = filter_input(INPUT_GET, 'result_id', FILTER_VALIDATE_INT);
-        $student_id = $_SESSION['user']['id'];
+        $student_id = ($_SESSION['user']['role'] === 'teacher' && isset($_GET['student_id']))
+            ? filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_SPECIAL_CHARS)
+            : $_SESSION['user']['id'];
 
         if (!$result_id) {
             UtilController::flashError('ข้อมูลไม่ถูกต้อง', 'ไม่พบข้อมูลใบประกาศนีเกียรติยศ');

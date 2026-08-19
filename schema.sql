@@ -84,3 +84,23 @@ CREATE TABLE IF NOT EXISTS `tournament_brackets` (
     CONSTRAINT `fk_bracket_winner` FOREIGN KEY (`winner_house_id`) REFERENCES `houses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT `fk_bracket_next_match` FOREIGN KEY (`next_match_id`) REFERENCES `tournament_brackets` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 8: Certificate Settings (Canva / Custom template settings)
+CREATE TABLE IF NOT EXISTS `certificate_settings` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `template_name` VARCHAR(100) DEFAULT 'Canva Template 2569',
+    `bg_style` VARCHAR(50) DEFAULT 'canva-2569',
+    `border_color` VARCHAR(20) DEFAULT '#f97316',
+    `header_title` VARCHAR(255) DEFAULT 'โรงเรียนพิชัย',
+    `cert_title` VARCHAR(255) DEFAULT 'ขอมอบเกียรติบัตรนี้ให้ไว้เพื่อแสดงว่า',
+    `body_pattern_1` TEXT DEFAULT NULL,
+    `body_pattern_2` TEXT DEFAULT 'เนื่องในกิจกรรมกีฬาสีโรงเรียนพิชัย Phichai Games 2026',
+    `body_pattern_3` TEXT DEFAULT 'ระหว่างวันที่ 5 – 7 สิงหาคม 2569',
+    `sig_left_title` VARCHAR(255) DEFAULT 'นางสาวรสสุคนธ์ วินชัยเหงา',
+    `sig_right_title` VARCHAR(255) DEFAULT 'ผู้อำนวยการโรงเรียนพิชัย',
+    `layout_json` LONGTEXT DEFAULT NULL,
+    `font_style` VARCHAR(50) DEFAULT 'Kanit',
+    `show_logos` TINYINT(1) DEFAULT 1,
+    `is_active` TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
