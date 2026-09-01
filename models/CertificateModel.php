@@ -259,11 +259,17 @@ class CertificateModel {
         $currentNo = intval($startNo);
         foreach ($list as $idx => &$item) {
             $item['seq'] = $idx + 1;
-            $item['cert_no_raw'] = $currentNo;
-            $item['cert_no'] = $currentNo . '/' . $year;
-            $item['no'] = $currentNo . '/' . $year; // For Canva column match
+            // Check for specific override (e.g. 28541 -> 8413)
+            if (isset($item['student_id']) && trim((string)$item['student_id']) === '28541') {
+                $assignedNo = 8413;
+            } else {
+                $assignedNo = $currentNo;
+                $currentNo++;
+            }
+            $item['cert_no_raw'] = $assignedNo;
+            $item['cert_no'] = $assignedNo . '/' . $year;
+            $item['no'] = $assignedNo . '/' . $year; // For Canva column match
             $item['name'] = $item['fullname'];     // For Canva column match
-            $currentNo++;
         }
         unset($item);
 
